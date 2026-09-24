@@ -2,7 +2,7 @@
   "name": "Guga",
   "short": "guga",
   "description": "极简清新风格服务器监控主题，支持毛玻璃、自定义壁纸与多端自适应",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "emmfax",
   "url": "https://github.com/emmfax/monitor-theme-guga",
   "config": [

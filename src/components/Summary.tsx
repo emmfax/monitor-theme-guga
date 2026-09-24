@@ -196,6 +196,14 @@ export function Summary({
             <span className="size-2 rounded-full bg-ok animate-pulse-dot" />
             {online.length}/{nodes.length} 在线
           </span>
+          {monthlyCostText && (
+            <>
+              <span className="text-border/60 shrink-0">/</span>
+              <span className="text-muted-foreground shrink-0">
+                月成本: <span className="tnum font-medium text-foreground">{monthlyCostText}</span>
+              </span>
+            </>
+          )}
           <span className="text-border/60 shrink-0">/</span>
           <span className="text-muted-foreground truncate">
             今日: <span className="tnum font-medium text-foreground">↓{bytes(sum((n) => n.day_rx))} · ↑{bytes(sum((n) => n.day_tx))}</span>
@@ -210,22 +218,14 @@ export function Summary({
           </span>
         </div>
 
-        {/* Right: Monthly Cost & Site Name */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 ml-2">
-          {monthlyCostText && (
-            <div className="hidden sm:flex items-center text-xs text-muted-foreground">
-              <span>月成本:</span>
-              <span className="tnum font-semibold text-foreground ml-1">{monthlyCostText}</span>
-            </div>
-          )}
-          {siteName && (
-            <div className="flex items-center pl-2.5 sm:pl-3 border-l border-border/40">
-              <span className="text-xs font-semibold text-foreground tracking-tight">
-                {siteName}
-              </span>
-            </div>
-          )}
-        </div>
+        {/* Right: Site Name */}
+        {siteName && (
+          <div className="flex items-center pl-2.5 sm:pl-3 border-l border-border/40 shrink-0 ml-2">
+            <span className="text-xs font-semibold text-foreground tracking-tight">
+              {siteName}
+            </span>
+          </div>
+        )}
       </div>
     )
   }

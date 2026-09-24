@@ -177,7 +177,11 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
           ) : (
             <span className="text-[10px] font-medium text-muted-foreground">{days} 天后到期</span>
           )}
-          {node.price && node.price > 0 ? (
+          {node.billing_cycle === "free" || (node.price !== undefined && node.price === 0) ? (
+            <span className="text-[10px] font-medium text-ok bg-ok/10 px-2 py-0.5 rounded-full border border-ok/20">
+              免费
+            </span>
+          ) : node.price && node.price > 0 ? (
             <span className="text-[10px] font-medium text-muted-foreground/80 tnum">
               续费: {money(node.price, node.currency)} / {CYCLES[node.billing_cycle] ?? node.billing_cycle ?? "月付"}
             </span>

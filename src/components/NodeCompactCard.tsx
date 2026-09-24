@@ -15,6 +15,19 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
   const trafficPct = node.traffic_limit > 0 ? percent(monthUsed, node.traffic_limit) : null
   const trafficFoot = node.traffic_limit > 0 ? pair(monthUsed, node.traffic_limit) : `${bytes(monthUsed)} / ${FOREVER}`
   const days = node.expires_in !== undefined && node.expires_in !== null ? node.expires_in : daysUntil(node.expires_at)
+  const isFree = node.billing_cycle === "free" || (node.price !== undefined && node.price === 0)
+  const cycleText =
+    node.billing_cycle === "monthly"
+      ? "月"
+      : node.billing_cycle === "quarterly"
+      ? "季"
+      : node.billing_cycle === "yearly"
+      ? "年"
+      : node.billing_cycle === "semiannual"
+      ? "半年"
+      : CYCLES[node.billing_cycle] ?? "月"
+  const priceStr = node.price && node.price > 0 ? `${money(node.price, node.currency)}/${cycleText}` : null
+  const expiryStr = days === null ? null : days < 0 ? "已过期" : days === 0 ? "今日到期" : `${days}天`
 
   return (
     <div
@@ -24,39 +37,46 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}
       className="glass-card group relative flex flex-col justify-between rounded-3xl border border-border/50 p-4 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm cursor-pointer select-none"
     >
-      {/* 1. Header: Flag, Name, Status, Expiry */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+      {/* 1. Header: Flag, Name, Status, Price & Expiry */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 pt-0.5">
           <CountryFlag country={node.country} />
           <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
             {node.name}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0 text-xs">
+        <div className="flex flex-col items-end gap-1 shrink-0 text-right">
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.2 text-[10px] font-medium",
+              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium select-none",
               node.online ? "bg-ok/12 text-ok" : "bg-destructive/12 text-destructive"
             )}
           >
             <span className={cn("size-1.5 rounded-full", node.online ? "bg-ok animate-pulse-dot" : "bg-destructive")} />
             {node.online ? (m ? uptime(m.uptime) : "在线") : "离线"}
           </span>
-          {node.price && node.price > 0 ? (
-            <span className="tnum text-[10px] font-medium text-foreground/80 bg-muted/50 px-1.5 py-0.2 rounded-full border border-border/30">
-              {money(node.price, node.currency)}/{CYCLES[node.billing_cycle] ?? "月"}
-            </span>
-          ) : null}
-          {days !== null && (
-            <span
-              className={cn(
-                "tnum text-[10px] font-medium",
-                days < 0 ? "text-destructive font-semibold" : days <= 7 ? "text-warn font-semibold" : "text-muted-foreground"
+
+          {(isFree || priceStr || expiryStr) && (
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground tnum font-normal select-none">
+              {isFree ? (
+                <span className="font-semibold text-ok">免费</span>
+              ) : priceStr ? (
+                <span className="font-medium text-foreground/80">{priceStr}</span>
+              ) : null}
+              {(isFree || priceStr) && expiryStr && (
+                <span className="text-border/60">·</span>
               )}
-            >
-              {days < 0 ? `已过期` : days === 0 ? "今日到期" : `${days}天`}
-            </span>
+              {expiryStr && (
+                <span
+                  className={cn(
+                    days !== null && days < 0 ? "text-destructive font-semibold" : days !== null && days <= 7 ? "text-warn font-semibold" : ""
+                  )}
+                >
+                  {expiryStr}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>
