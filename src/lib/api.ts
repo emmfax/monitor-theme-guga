@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export type LatencyProbeSummary = {
   name: string
@@ -159,6 +159,7 @@ export function useNodes() {
   const [nodes, setNodes] = useState<Node[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [closed, setClosed] = useState(false)
+  const nodesRef = useRef<Node[] | null>(null)
 
   useEffect(() => {
     let socket: WebSocket | null = null
@@ -168,6 +169,7 @@ export function useNodes() {
 
     const receive = (list: Node[]) => {
       const safe = safeNodes(list)
+      nodesRef.current = safe
       sample(safe)
       setNodes(safe)
       setError(null)
@@ -181,7 +183,10 @@ export function useNodes() {
           if (e instanceof ApiError && e.status === 401) {
             setClosed(true)
           } else {
-            setError(e.message || "无法连接到监控服务端")
+            // Only report error if we don't have nodes yet; do not flash error banner if nodes are already rendered
+            if (nodesRef.current === null) {
+              setError("无法连接到监控服务端，请检查网络")
+            }
           }
         })
 
@@ -231,6 +236,20 @@ const latencyCache = new Map<number, NodeLatencyInfo>()
 const latencyPending = new Set<number>()
 const latencyFetchedAt = new Map<number, number>()
 
+// Concurrency-controlled latency queue: at most 3 in-flight requests at once to avoid network congestion
+const latencyQueue: (() => void)[] = []
+let activeLatencyCount = 0
+
+function pumpLatencyQueue() {
+  while (activeLatencyCount < 3 && latencyQueue.length > 0) {
+    const run = latencyQueue.shift()
+    if (run) {
+      activeLatencyCount++
+      run()
+    }
+  }
+}
+
 export function useNodeLatency(nodeId: number, online: boolean): NodeLatencyInfo | null {
   const [info, setInfo] = useState<NodeLatencyInfo | null>(() => {
     return latencyCache.get(nodeId) ?? null
@@ -250,10 +269,19 @@ export function useNodeLatency(nodeId: number, online: boolean): NodeLatencyInfo
     latencyPending.add(nodeId)
 
     let active = true
-    api<{ ping: { task_id: number; latency: number | null }[]; probes: Record<string, string> }>(
-      `/nodes/${nodeId}/metrics?hours=1&points=12&series=ping`
-    )
-      .then((res) => {
+
+    latencyQueue.push(async () => {
+      if (!active) {
+        latencyPending.delete(nodeId)
+        activeLatencyCount--
+        pumpLatencyQueue()
+        return
+      }
+
+      try {
+        const res = await api<{ ping: { task_id: number; latency: number | null }[]; probes: Record<string, string> }>(
+          `/nodes/${nodeId}/metrics?hours=1&points=12&series=ping`
+        )
         latencyPending.delete(nodeId)
         latencyFetchedAt.set(nodeId, Date.now())
         if (!active) return
@@ -291,8 +319,7 @@ export function useNodeLatency(nodeId: number, online: boolean): NodeLatencyInfo
         }
         latencyCache.set(nodeId, result)
         setInfo(result)
-      })
-      .catch(() => {
+      } catch {
         latencyPending.delete(nodeId)
         latencyFetchedAt.set(nodeId, Date.now())
         if (active) {
@@ -304,7 +331,13 @@ export function useNodeLatency(nodeId: number, online: boolean): NodeLatencyInfo
           latencyCache.set(nodeId, result)
           setInfo(result)
         }
-      })
+      } finally {
+        activeLatencyCount--
+        pumpLatencyQueue()
+      }
+    })
+
+    pumpLatencyQueue()
 
     return () => {
       active = false

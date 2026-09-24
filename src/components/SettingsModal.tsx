@@ -13,12 +13,16 @@ import {
   Sparkles,
   Square,
   Droplets,
+  LayoutGrid,
+  List,
+  Grid2X2,
 } from "lucide-react"
 import type { Palette } from "@/lib/config"
 import { cn } from "@/lib/utils"
 
 export type ThemeMode = "system" | "light" | "dark"
 export type CardStyle = "blur" | "solid" | "transparent"
+export type ViewMode = "grid" | "compact" | "list"
 
 export interface SettingsModalProps {
   isOpen: boolean
@@ -34,6 +38,14 @@ export interface SettingsModalProps {
   onBgUrlChange: (url: string) => void
   bgMask: number
   onBgMaskChange: (val: number) => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
+  colCount: number
+  onColCountChange: (cols: number) => void
+  summaryCollapsed: boolean
+  onSummaryCollapsedChange: (collapsed: boolean) => void
+  showSparkline: boolean
+  onShowSparklineChange: (show: boolean) => void
   onResetAll: () => void
 }
 
@@ -84,6 +96,14 @@ export function SettingsModal({
   onBgUrlChange,
   bgMask,
   onBgMaskChange,
+  viewMode,
+  onViewModeChange,
+  colCount,
+  onColCountChange,
+  summaryCollapsed,
+  onSummaryCollapsedChange,
+  showSparkline,
+  onShowSparklineChange,
   onResetAll,
 }: SettingsModalProps) {
   const [prevBgUrl, setPrevBgUrl] = useState(bgUrl)
@@ -441,6 +461,102 @@ export function SettingsModal({
                     {preset.name}
                   </button>
                 ))}
+              </div>
+            </div>
+          </Section>
+
+          {/* 5. 排版布局与功能 */}
+          <Section icon={LayoutGrid} title="排版布局与功能">
+            {/* View Mode */}
+            <div className="space-y-2">
+              <span className="text-xs font-medium text-foreground">视图排版模式</span>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { mode: "list" as const, label: "列表模式", icon: List },
+                  { mode: "compact" as const, label: "紧凑模式", icon: Grid2X2 },
+                  { mode: "grid" as const, label: "大卡片", icon: LayoutGrid },
+                ].map(({ mode, label, icon: ModeIcon }) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => onViewModeChange(mode)}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 rounded-xl border p-2.5 text-xs font-semibold transition-all cursor-pointer active:scale-95",
+                      viewMode === mode
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-card hover:bg-muted border-border/40 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <ModeIcon className="size-3.5" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Column Count (1 to 5) */}
+            <div className="space-y-2 pt-2 border-t border-border/30">
+              <div className="flex items-center justify-between text-xs font-medium text-foreground">
+                <span>每行卡片数量 (网格/紧凑)</span>
+                <span className="tnum font-semibold text-primary">{colCount} 列</span>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5">
+                {[1, 2, 3, 4, 5].map((cols) => (
+                  <button
+                    key={cols}
+                    type="button"
+                    onClick={() => onColCountChange(cols)}
+                    className={cn(
+                      "rounded-lg py-1.5 text-xs font-semibold border transition-all cursor-pointer active:scale-95 text-center",
+                      colCount === cols
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-card hover:bg-muted border-border/40 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {cols}列
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Feature Toggles: Summary bar & Sparkline */}
+            <div className="space-y-2 pt-2 border-t border-border/30">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-medium text-foreground block">顶部统计看板</span>
+                  <span className="text-[10px] text-muted-foreground">打开网页时是否默认展开统计数据</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onSummaryCollapsedChange(!summaryCollapsed)}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95",
+                    !summaryCollapsed
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-muted text-muted-foreground border-border/40"
+                  )}
+                >
+                  {!summaryCollapsed ? "默认展开" : "默认收起"}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-medium text-foreground block">实时网速折线图</span>
+                  <span className="text-[10px] text-muted-foreground">在节点卡片上展示最近几分钟的波动折线</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onShowSparklineChange(!showSparkline)}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95",
+                    showSparkline
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-muted text-muted-foreground border-border/40"
+                  )}
+                >
+                  {showSparkline ? "开启" : "隐藏"}
+                </button>
               </div>
             </div>
           </Section>

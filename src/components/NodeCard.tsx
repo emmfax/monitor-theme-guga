@@ -204,7 +204,15 @@ function ProbeSparkline({
   )
 }
 
-function LatencySection({ nodeId, online }: { nodeId: number; online: boolean }) {
+function LatencySection({
+  nodeId,
+  online,
+  showSparkline = true,
+}: {
+  nodeId: number
+  online: boolean
+  showSparkline?: boolean
+}) {
   const latency = useNodeLatency(nodeId, online)
 
   if (!online) {
@@ -326,9 +334,11 @@ function LatencySection({ nodeId, online }: { nodeId: number; online: boolean })
                 </span>
               </div>
 
-              <div className="mt-1">
-                <ProbeSparkline points={p.sparkline} color={strokeColor} isTimeout={isTimeout} />
-              </div>
+              {showSparkline && (
+                <div className="mt-1">
+                  <ProbeSparkline points={p.sparkline} color={strokeColor} isTimeout={isTimeout} />
+                </div>
+              )}
             </div>
           )
         })}
@@ -337,7 +347,15 @@ function LatencySection({ nodeId, online }: { nodeId: number; online: boolean })
   )
 }
 
-export function NodeCard({ node, onOpen }: { node: Node; onOpen: () => void }) {
+export function NodeCard({
+  node,
+  onOpen,
+  showSparkline = true,
+}: {
+  node: Node
+  onOpen: () => void
+  showSparkline?: boolean
+}) {
   const m = node.metrics
 
   return (
@@ -411,7 +429,7 @@ export function NodeCard({ node, onOpen }: { node: Node; onOpen: () => void }) {
 
               {/* Prominent Dedicated Latency Section */}
               <div className="mt-4">
-                <LatencySection nodeId={node.id} online={node.online} />
+                <LatencySection nodeId={node.id} online={node.online} showSparkline={showSparkline} />
               </div>
             </>
           ) : (

@@ -22,7 +22,7 @@ import { NodeListRow } from "@/components/NodeListRow"
 import { Summary } from "@/components/Summary"
 import { WorldMap } from "@/components/WorldMap"
 import { Skeleton } from "@/components/Skeleton"
-import { SettingsModal, type ThemeMode, type CardStyle } from "@/components/SettingsModal"
+import { SettingsModal, type ThemeMode, type CardStyle, type ViewMode } from "@/components/SettingsModal"
 import { api, groupsOf, useNodes, type Node } from "@/lib/api"
 import { loadConfig, type Palette, type ThemeConfig } from "@/lib/config"
 import { cn } from "@/lib/utils"
@@ -187,6 +187,44 @@ export default function App() {
   const { cardStyle, updateCardStyle } = useCardStyle()
   const [config, setConfig] = useState<ThemeConfig | null>(null)
   const [palette, setPalette] = usePalette(config?.palette ?? "mono")
+
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    return (localStorage.getItem("theme_view_mode") as ViewMode) || "list"
+  })
+  const updateViewMode = useCallback((mode: ViewMode, persist = true) => {
+    setViewMode(mode)
+    if (persist) localStorage.setItem("theme_view_mode", mode)
+  }, [])
+
+  const [colCount, setColCount] = useState<number>(() => {
+    const saved = localStorage.getItem("theme_columns")
+    return saved ? Number(saved) : 3
+  })
+  const updateColCount = useCallback((c: number, persist = true) => {
+    setColCount(c)
+    if (persist) localStorage.setItem("theme_columns", String(c))
+  }, [])
+
+  const [summaryCollapsed, setSummaryCollapsed] = useState<boolean>(() => {
+    const saved = localStorage.getItem("theme_summary_collapsed")
+    if (saved !== null) return saved === "true"
+    return true
+  })
+  const updateSummaryCollapsed = useCallback((collapsed: boolean, persist = true) => {
+    setSummaryCollapsed(collapsed)
+    if (persist) localStorage.setItem("theme_summary_collapsed", String(collapsed))
+  }, [])
+
+  const [showSparkline, setShowSparkline] = useState<boolean>(() => {
+    const saved = localStorage.getItem("theme_show_sparkline")
+    if (saved !== null) return saved === "true"
+    return true
+  })
+  const updateShowSparkline = useCallback((show: boolean, persist = true) => {
+    setShowSparkline(show)
+    if (persist) localStorage.setItem("theme_show_sparkline", String(show))
+  }, [])
+
   const [me, setMe] = useState<Me | null>(null)
   const [meError, setMeError] = useState("")
   const { nodes, error, closed } = useNodes()
@@ -240,8 +278,30 @@ export default function App() {
       if (localStorage.getItem("theme_bg_mask") === null && cfg.bg_mask !== undefined) {
         updateBgMask(cfg.bg_mask, false)
       }
+      if (localStorage.getItem("theme_view_mode") === null && cfg.default_view) {
+        updateViewMode(cfg.default_view, false)
+      }
+      if (localStorage.getItem("theme_columns") === null && cfg.columns) {
+        updateColCount(cfg.columns, false)
+      }
+      if (localStorage.getItem("theme_summary_collapsed") === null && cfg.show_summary !== undefined) {
+        updateSummaryCollapsed(!cfg.show_summary, false)
+      }
+      if (localStorage.getItem("theme_show_sparkline") === null && cfg.show_sparkline !== undefined) {
+        updateShowSparkline(cfg.show_sparkline !== false, false)
+      }
     })
-  }, [setPalette, setThemeMode, updateCardStyle, updateBgUrl, updateBgMask])
+  }, [
+    setPalette,
+    setThemeMode,
+    updateCardStyle,
+    updateBgUrl,
+    updateBgMask,
+    updateViewMode,
+    updateColCount,
+    updateSummaryCollapsed,
+    updateShowSparkline,
+  ])
 
   const handleResetPreferences = useCallback(() => {
     localStorage.removeItem("theme_mode")
@@ -254,19 +314,39 @@ export default function App() {
     localStorage.removeItem("theme_view_mode")
     localStorage.removeItem("theme_columns")
     localStorage.removeItem("theme_summary_collapsed")
+    localStorage.removeItem("theme_show_sparkline")
 
     const defPalette = config?.palette ?? "mono"
     const defMode = config?.theme_mode ?? "system"
     const defStyle = config?.card_style ?? "solid"
     const defBgUrl = config?.bg_url ?? ""
     const defMask = config?.bg_mask ?? 35
+    const defView = config?.default_view ?? "list"
+    const defCols = config?.columns ?? 3
+    const defSummary = config?.show_summary !== undefined ? !config.show_summary : true
+    const defSpark = config?.show_sparkline !== undefined ? config.show_sparkline !== false : true
 
     setPalette(defPalette, false)
     setThemeMode(defMode, false)
     updateCardStyle(defStyle, false)
     updateBgUrl(defBgUrl, false)
     updateBgMask(defMask, false)
-  }, [config, setPalette, setThemeMode, updateCardStyle, updateBgUrl, updateBgMask])
+    updateViewMode(defView, false)
+    updateColCount(defCols, false)
+    updateSummaryCollapsed(defSummary, false)
+    updateShowSparkline(defSpark, false)
+  }, [
+    config,
+    setPalette,
+    setThemeMode,
+    updateCardStyle,
+    updateBgUrl,
+    updateBgMask,
+    updateViewMode,
+    updateColCount,
+    updateSummaryCollapsed,
+    updateShowSparkline,
+  ])
 
   const loadMe = useCallback(() => {
     return api<Me>("/me")
@@ -279,7 +359,12 @@ export default function App() {
 
   useEffect(() => {
     loadMe()
-    void loadDetail()
+    // Preload heavy detail chunk during idle time instead of competing with critical initial load
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(() => void loadDetail())
+    } else {
+      setTimeout(() => void loadDetail(), 2000)
+    }
   }, [loadMe])
 
   useEffect(() => {
@@ -368,15 +453,16 @@ export default function App() {
       />
 
       <main className="relative z-10 mx-auto max-w-[1340px] space-y-5 px-3 sm:px-6 pt-4 sm:pt-6">
-        {/* Notice Banner */}
-        {config?.notice && (
+        {/* Notice Banner - only display if notice has actual text, never show empty banner */}
+        {config?.notice?.trim() ? (
           <div className="flex items-center gap-2.5 rounded-full bg-primary/10 border border-primary/25 px-5 py-2.5 text-xs font-semibold text-foreground backdrop-blur-xl shadow-2xs">
             <Sparkles className="size-4 text-primary shrink-0" />
-            <span className="truncate">{config.notice}</span>
+            <span className="truncate">{config.notice.trim()}</span>
           </div>
-        )}
+        ) : null}
 
-        {error && (
+        {/* Global error banner only if initial fetch failed and there are no nodes */}
+        {!nodes && error && (
           <p className="rounded-xl bg-destructive/10 px-4 py-2 text-xs font-semibold text-destructive">
             {error}
           </p>
@@ -412,9 +498,13 @@ export default function App() {
             group={group}
             onGroup={setGroup}
             onOpen={go}
-            columns={config?.columns ?? 3}
-            defaultView={config?.default_view ?? "list"}
-            defaultShowSummary={config?.show_summary ?? false}
+            viewMode={viewMode}
+            onViewModeChange={updateViewMode}
+            colCount={colCount}
+            onColCountChange={updateColCount}
+            summaryCollapsed={summaryCollapsed}
+            onToggleSummary={() => updateSummaryCollapsed(!summaryCollapsed)}
+            showSparkline={showSparkline}
             siteName={me?.site_name || "Guga"}
           />
         )}
@@ -526,6 +616,14 @@ export default function App() {
         onBgUrlChange={updateBgUrl}
         bgMask={bgMask}
         onBgMaskChange={updateBgMask}
+        viewMode={viewMode}
+        onViewModeChange={updateViewMode}
+        colCount={colCount}
+        onColCountChange={updateColCount}
+        summaryCollapsed={summaryCollapsed}
+        onSummaryCollapsedChange={updateSummaryCollapsed}
+        showSparkline={showSparkline}
+        onShowSparklineChange={updateShowSparkline}
         onResetAll={handleResetPreferences}
       />
     </div>
@@ -539,18 +637,26 @@ function NodeList({
   group,
   onGroup,
   onOpen,
-  columns,
-  defaultView = "list",
-  defaultShowSummary = false,
+  viewMode,
+  onViewModeChange,
+  colCount,
+  onColCountChange,
+  summaryCollapsed,
+  onToggleSummary,
+  showSparkline = true,
   siteName,
 }: {
   nodes: Node[]
   group: string | null
   onGroup: (group: string | null) => void
   onOpen: (id: number) => void
-  columns: number
-  defaultView?: "grid" | "compact" | "list"
-  defaultShowSummary?: boolean
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
+  colCount: number
+  onColCountChange: (cols: number) => void
+  summaryCollapsed: boolean
+  onToggleSummary: () => void
+  showSparkline?: boolean
   siteName?: string
 }) {
   const [query, setQuery] = useState("")
@@ -609,41 +715,6 @@ function NodeList({
     ...groups.map((g) => [g, g, nodes.filter((n) => n.group === g).length] as const),
     ...(ungrouped ? [["", "未分组", ungrouped] as const] : []),
   ]
-
-  type ViewMode = "grid" | "compact" | "list"
-
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    return (localStorage.getItem("theme_view_mode") as ViewMode) || defaultView || "list"
-  })
-
-  const [colCount, setColCount] = useState<number>(() => {
-    const saved = localStorage.getItem("theme_columns")
-    return saved ? Number(saved) : (columns || 3)
-  })
-
-  const setAndSaveViewMode = (mode: ViewMode) => {
-    setViewMode(mode)
-    localStorage.setItem("theme_view_mode", mode)
-  }
-
-  const setAndSaveColCount = (c: number) => {
-    setColCount(c)
-    localStorage.setItem("theme_columns", String(c))
-  }
-
-  const [summaryCollapsed, setSummaryCollapsed] = useState<boolean>(() => {
-    const saved = localStorage.getItem("theme_summary_collapsed")
-    if (saved !== null) return saved === "true"
-    return !defaultShowSummary
-  })
-
-  const toggleSummary = () => {
-    setSummaryCollapsed((c) => {
-      const next = !c
-      localStorage.setItem("theme_summary_collapsed", String(next))
-      return next
-    })
-  }
 
   const gridClass =
     colCount === 1
@@ -763,7 +834,7 @@ function NodeList({
                 {[2, 3, 4, 5].map((c) => (
                   <button
                     key={c}
-                    onClick={() => setAndSaveColCount(c)}
+                    onClick={() => onColCountChange(c)}
                     className={cn(
                       "flex h-8 min-w-[32px] items-center justify-center rounded-full px-2 text-xs font-medium transition-all cursor-pointer",
                       colCount === c
@@ -781,7 +852,7 @@ function NodeList({
             {/* View Mode Switcher */}
             <div className="pill-bar inline-flex h-10 items-center rounded-full bg-muted/60 p-1 border border-border/40 shrink-0 select-none gap-0.5">
               <button
-                onClick={() => setAndSaveViewMode("grid")}
+                onClick={() => onViewModeChange("grid")}
                 className={cn(
                   "flex h-8 items-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer",
                   viewMode === "grid"
@@ -795,7 +866,7 @@ function NodeList({
               </button>
 
               <button
-                onClick={() => setAndSaveViewMode("compact")}
+                onClick={() => onViewModeChange("compact")}
                 className={cn(
                   "flex h-8 items-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer",
                   viewMode === "compact"
@@ -809,7 +880,7 @@ function NodeList({
               </button>
 
               <button
-                onClick={() => setAndSaveViewMode("list")}
+                onClick={() => onViewModeChange("list")}
                 className={cn(
                   "flex h-8 items-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer",
                   viewMode === "list"
@@ -825,7 +896,7 @@ function NodeList({
 
             {/* Summary Collapsible Toggle Button */}
             <button
-              onClick={toggleSummary}
+              onClick={onToggleSummary}
               className={cn(
                 "pill-bar inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-all cursor-pointer border border-border/40 select-none shrink-0 active:scale-95",
                 summaryCollapsed
@@ -896,7 +967,7 @@ function NodeList({
       ) : (
         <div className={cn("grid gap-4 items-stretch", gridClass)}>
           {searchFiltered.map((n) => (
-            <NodeCard key={n.id} node={n} onOpen={() => onOpen(n.id)} />
+            <NodeCard key={n.id} node={n} onOpen={() => onOpen(n.id)} showSparkline={showSparkline} />
           ))}
         </div>
       )}

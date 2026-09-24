@@ -289,16 +289,25 @@ export function Summary({
         }
       >
         <div className="flex items-baseline justify-between gap-2">
-          <div className="tnum text-2xl font-semibold tracking-tight text-foreground">
-            {online.length}
-            <span className="text-sm font-normal text-muted-foreground ml-1.5">/ {nodes.length} 在线</span>
-          </div>
-          {monthlyCostText && (
-            <div className="text-right">
+          {monthlyCostText ? (
+            <div>
               <span className="text-[10px] text-muted-foreground font-medium block">月度成本</span>
-              <span className="tnum text-base sm:text-lg font-bold text-foreground tracking-tight">
+              <span className="tnum text-xl sm:text-2xl font-bold text-foreground tracking-tight">
                 {monthlyCostText}
               </span>
+            </div>
+          ) : (
+            <div className="tnum text-2xl font-semibold tracking-tight text-foreground">
+              {online.length}
+              <span className="text-sm font-normal text-muted-foreground ml-1.5">/ {nodes.length} 在线</span>
+            </div>
+          )}
+          {monthlyCostText && (
+            <div className="text-right">
+              <div className="tnum text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+                {online.length}
+                <span className="text-sm font-normal text-muted-foreground ml-1.5">/ {nodes.length} 在线</span>
+              </div>
             </div>
           )}
         </div>
