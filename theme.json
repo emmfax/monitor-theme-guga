@@ -1,0 +1,129 @@
+{
+  "name": "Guga",
+  "short": "guga",
+  "description": "极简清新风格服务器监控主题，支持毛玻璃、自定义壁纸与多端自适应",
+  "version": "1.0.0",
+  "author": "emmfax",
+  "url": "https://github.com/emmfax/monitor-theme-guga",
+  "config": [
+    { "type": "title", "label": "界面风格与壁纸" },
+    {
+      "key": "palette",
+      "type": "select",
+      "label": "主题强调色",
+      "default": "mono",
+      "help": "网站的主题颜色",
+      "options": [
+        { "value": "mono", "label": "极简白 (默认)" },
+        { "value": "ocean", "label": "天空蓝" },
+        { "value": "emerald", "label": "薄荷绿" },
+        { "value": "iris", "label": "浅紫色" },
+        { "value": "sunset", "label": "暖阳金" }
+      ]
+    },
+    {
+      "key": "theme_mode",
+      "type": "select",
+      "label": "深浅色外观",
+      "default": "system",
+      "help": "未手动切换过的访客默认看到的颜色模式",
+      "options": [
+        { "value": "system", "label": "跟随系统 (默认)" },
+        { "value": "light", "label": "浅色模式" },
+        { "value": "dark", "label": "深色模式" }
+      ]
+    },
+    {
+      "key": "card_style",
+      "type": "select",
+      "label": "卡片显示效果",
+      "default": "solid",
+      "help": "服务器卡片的背景视觉样式",
+      "options": [
+        { "value": "solid", "label": "纯色卡片 (默认)" },
+        { "value": "transparent", "label": "透明卡片" },
+        { "value": "blur", "label": "毛玻璃卡片" }
+      ]
+    },
+    {
+      "key": "bg_mask",
+      "type": "number",
+      "label": "背景遮罩浓度 (%)",
+      "default": 35,
+      "min": 0,
+      "max": 100,
+      "help": "设置 0 到 100，数值越小越透亮，默认 35"
+    },
+    {
+      "key": "bg_preset",
+      "type": "select",
+      "label": "全站背景壁纸",
+      "default": "none",
+      "help": "可直接选择必应每日壁纸，或使用纯色背景",
+      "options": [
+        { "value": "none", "label": "无壁纸 (纯色背景 - 默认)" },
+        { "value": "bing_daily", "label": "必应每日壁纸 (每天自动更新)" },
+        { "value": "bing_rand", "label": "必应随机壁纸 (每次刷新随机)" },
+        { "value": "custom", "label": "自定义壁纸 (在下方输入图片链接)" }
+      ]
+    },
+    {
+      "key": "bg_url",
+      "type": "text",
+      "label": "自定义壁纸链接",
+      "default": "",
+      "help": "仅在上方选择「自定义壁纸」时生效，填入图片直链（支持 HTTPS）"
+    },
+    { "type": "title", "label": "站点通知公告" },
+    {
+      "key": "notice",
+      "type": "text",
+      "label": "顶部公告内容",
+      "default": "",
+      "help": "显示在页面最上方的通知文字，不填则不显示"
+    },
+    { "type": "title", "label": "排版布局与功能" },
+    {
+      "key": "default_view",
+      "type": "select",
+      "label": "默认列表排版",
+      "default": "list",
+      "help": "打开网站时默认展示的列表样式",
+      "options": [
+        { "value": "list", "label": "列表模式 (默认)" },
+        { "value": "compact", "label": "紧凑模式" },
+        { "value": "grid", "label": "大卡片模式" }
+      ]
+    },
+    {
+      "key": "columns",
+      "type": "number",
+      "label": "每行显示机器数",
+      "default": 3,
+      "min": 1,
+      "max": 5,
+      "help": "电脑网页端一行排几台机器，范围 1 到 5，默认 3"
+    },
+    {
+      "key": "show_summary",
+      "type": "boolean",
+      "label": "默认展开顶部统计",
+      "default": false,
+      "help": "打开网页时是否自动展开最上面的总流量与网速统计"
+    },
+    {
+      "key": "show_map",
+      "type": "boolean",
+      "label": "默认展开节点地图",
+      "default": false,
+      "help": "打开网页时是否自动展开全球节点分布地图"
+    },
+    {
+      "key": "show_sparkline",
+      "type": "boolean",
+      "label": "显示网速折线图",
+      "default": true,
+      "help": "是否在卡片上显示最近几分钟的实时网速小折线图"
+    }
+  ]
+}

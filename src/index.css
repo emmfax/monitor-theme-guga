@@ -1,0 +1,346 @@
+@import "tailwindcss" source(none);
+@source "../index.html";
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.75rem;
+  --font-sans: "Roboto", "Plus Jakarta Sans", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Default Pure Minimal Monochrome Palette - Google Material 3 Expressive Tones */
+  --primary: #1e1f24;
+  --primary-foreground: #ffffff;
+  --primary-container: #e8ebf0;
+  --on-primary-container: #1e1f24;
+
+  --background: #f6f7fb;
+  --foreground: #1c1d22;
+
+  --card: #ffffff;
+  --card-foreground: #1c1d22;
+  --card-border: rgba(0, 0, 0, 0.06);
+
+  --popover: #ffffff;
+  --popover-foreground: #1c1d22;
+
+  --secondary: #edf0f5;
+  --secondary-foreground: #1c1d22;
+
+  --muted: #edf0f5;
+  --muted-foreground: #6c707a;
+
+  --accent: #edf0f5;
+  --accent-foreground: #1c1d22;
+
+  --destructive: #d93025;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: rgba(30, 31, 36, 0.2);
+
+  --chart-1: #1e1f24;
+  --chart-2: #1e8e3e;
+  --chart-3: #f9ab00;
+  --chart-4: #1a73e8;
+  --chart-5: #e52592;
+
+  --ok: #1e8e3e;
+  --warn: #f9ab00;
+  --online: #1e8e3e;
+  --offline: #80868b;
+}
+
+.dark {
+  --primary: #ffffff;
+  --primary-foreground: #111215;
+  --primary-container: rgba(255, 255, 255, 0.12);
+  --on-primary-container: #ffffff;
+
+  --background: #121316;
+  --foreground: #f1f3f4;
+
+  --card: #1b1c20;
+  --card-foreground: #f1f3f4;
+  --card-border: rgba(255, 255, 255, 0.08);
+
+  --popover: #1e1f24;
+  --popover-foreground: #f1f3f4;
+
+  --secondary: #24262d;
+  --secondary-foreground: #f1f3f4;
+
+  --muted: #24262d;
+  --muted-foreground: #9aa0a6;
+
+  --accent: #2e3038;
+  --accent-foreground: #f1f3f4;
+
+  --destructive: #f28b82;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(255, 255, 255, 0.35);
+
+  --chart-1: #ffffff;
+  --chart-2: #34d399;
+  --chart-3: #fbbf24;
+  --chart-4: #38bdf8;
+  --chart-5: #f472b6;
+
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --online: #34d399;
+  --offline: #9aa0a6;
+}
+
+/* Palette variations */
+[data-palette="mono"] {
+  --primary: #1e1f24;
+  --primary-foreground: #ffffff;
+}
+.dark[data-palette="mono"] {
+  --primary: #ffffff;
+  --primary-foreground: #111215;
+}
+
+[data-palette="ocean"] {
+  --primary: #1a73e8;
+  --primary-foreground: #ffffff;
+}
+.dark[data-palette="ocean"] {
+  --primary: #38bdf8;
+  --primary-foreground: #111215;
+}
+
+[data-palette="emerald"] {
+  --primary: #1e8e3e;
+  --primary-foreground: #ffffff;
+}
+.dark[data-palette="emerald"] {
+  --primary: #34d399;
+  --primary-foreground: #111215;
+}
+
+[data-palette="iris"] {
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+}
+.dark[data-palette="iris"] {
+  --primary: #a78bfa;
+  --primary-foreground: #111215;
+}
+
+[data-palette="sunset"] {
+  --primary: #ea8600;
+  --primary-foreground: #ffffff;
+}
+.dark[data-palette="sunset"] {
+  --primary: #fbbf24;
+  --primary-foreground: #111215;
+}
+
+@theme inline {
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.25rem;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-online: var(--online);
+  --color-offline: var(--offline);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scrollbar-gutter: stable;
+    font-family: var(--font-sans);
+  }
+  body {
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
+  }
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 0 0 oklch(var(--online) / 40%);
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.9;
+    box-shadow: 0 0 0 6px oklch(var(--online) / 0%);
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-glow 2.2s cubic-bezier(0.2, 0, 0, 1) infinite;
+}
+
+/* Expressive pill smooth transition */
+.expressive-spring {
+  transition: all 0.35s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.expressive-bounce {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.expressive-bounce:active {
+  transform: scale(0.96);
+}
+
+/* Unified Card Interface System (Blur, Solid, Transparent) */
+.glass-card {
+  transition: background-color 0.2s ease, border-color 0.2s ease, backdrop-filter 0.2s ease;
+}
+
+/* 1. Default / Frosted Glass Mode (✨ 统一毛玻璃) */
+:root[data-card-style="blur"] .glass-card,
+html:not([data-card-style="solid"]):not([data-card-style="transparent"]):not([data-card-blur="false"]) .glass-card {
+  background-color: rgba(255, 255, 255, var(--glass-bg-opacity, 0.88));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+}
+
+.dark[data-card-style="blur"] .glass-card,
+html.dark:not([data-card-style="solid"]):not([data-card-style="transparent"]):not([data-card-blur="false"]) .glass-card {
+  background-color: rgba(27, 28, 32, var(--glass-bg-opacity, 0.88));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+}
+
+:root[data-card-style="blur"] .pill-bar,
+html:not([data-card-style="solid"]):not([data-card-style="transparent"]):not([data-card-blur="false"]) .pill-bar {
+  background-color: rgba(255, 255, 255, var(--pill-bg-opacity, 0.7));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+}
+.dark[data-card-style="blur"] .pill-bar,
+html.dark:not([data-card-style="solid"]):not([data-card-style="transparent"]):not([data-card-blur="false"]) .pill-bar {
+  background-color: rgba(36, 38, 45, var(--pill-bg-opacity, 0.7));
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
+}
+
+/* 2. Solid Color Mode (⬛ 纯色固色卡片) */
+:root[data-card-style="solid"] .glass-card,
+html[data-card-style="solid"] .glass-card,
+:root[data-card-blur="false"] .glass-card,
+html[data-card-blur="false"] .glass-card {
+  background-color: var(--card) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+:root[data-card-style="solid"] .pill-bar,
+html[data-card-style="solid"] .pill-bar,
+:root[data-card-blur="false"] .pill-bar,
+html[data-card-blur="false"] .pill-bar {
+  background-color: var(--muted) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 3. Transparent Mode (🪟 全透明轻盈模式) - 增强对比度确保字迹清晰 */
+:root[data-card-style="transparent"] .glass-card,
+html[data-card-style="transparent"] .glass-card {
+  background-color: rgba(255, 255, 255, var(--glass-bg-opacity, 0.65)) !important;
+  backdrop-filter: blur(var(--glass-blur, 16px)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06) !important;
+}
+
+.dark[data-card-style="transparent"] .glass-card,
+html.dark[data-card-style="transparent"] .glass-card {
+  background-color: rgba(18, 20, 26, var(--glass-bg-opacity, 0.70)) !important;
+  backdrop-filter: blur(var(--glass-blur, 16px)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
+}
+
+:root[data-card-style="transparent"] .pill-bar,
+html[data-card-style="transparent"] .pill-bar {
+  background-color: rgba(255, 255, 255, var(--pill-bg-opacity, 0.55)) !important;
+  backdrop-filter: blur(var(--glass-blur, 12px)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) !important;
+}
+.dark[data-card-style="transparent"] .pill-bar,
+html.dark[data-card-style="transparent"] .pill-bar {
+  background-color: rgba(26, 28, 36, var(--pill-bg-opacity, 0.60)) !important;
+  backdrop-filter: blur(var(--glass-blur, 12px)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) !important;
+}
+
+/* Custom Sleek Scrollbar (Minimal iOS-like rounded pill) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.16);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.32);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.32);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.16) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
