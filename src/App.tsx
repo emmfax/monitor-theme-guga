@@ -452,7 +452,12 @@ export default function App() {
         isModal
       />
 
-      <main className="relative z-10 mx-auto max-w-[1340px] space-y-5 px-3 sm:px-6 pt-4 sm:pt-6">
+      <main
+        className={cn(
+          "relative z-10 mx-auto space-y-5 px-3 sm:px-6 pt-4 sm:pt-6 transition-[max-width] duration-200",
+          colCount >= 5 ? "max-w-[1720px]" : colCount === 4 ? "max-w-[1480px]" : "max-w-[1340px]"
+        )}
+      >
         {/* Notice Banner - only display if notice has actual text, never show empty banner */}
         {config?.notice?.trim() ? (
           <div className="flex items-center gap-2.5 rounded-full bg-primary/10 border border-primary/25 px-5 py-2.5 text-xs font-semibold text-foreground backdrop-blur-xl shadow-2xs">
@@ -720,12 +725,12 @@ function NodeList({
     colCount === 1
       ? "grid-cols-1"
       : colCount === 2
-      ? "grid-cols-1 md:grid-cols-2"
+      ? "grid-cols-1 sm:grid-cols-2"
       : colCount === 4
-      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       : colCount === 5
-      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-      : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+      ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 min-[1180px]:grid-cols-5"
+      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
 
   return (
     <div className="space-y-4">
