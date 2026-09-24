@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, Activity } from "lucide-react"
 import { CountryFlag } from "@/components/CountryFlag"
 import { type Node, useNodeLatency } from "@/lib/api"
-import { FOREVER, bytes, daysUntil, osName, pair, percent, rate } from "@/lib/format"
+import { CYCLES, FOREVER, bytes, daysUntil, money, osName, pair, percent, rate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }) {
@@ -165,7 +165,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
             <span>↑ {bytes(node.total_tx)}</span>
           </div>
         </div>
-        <div className="shrink-0 text-right">
+        <div className="shrink-0 text-right flex flex-col items-end gap-1">
           {days === null ? (
             <span className="text-[10px] font-medium text-muted-foreground">永久有效 ∞</span>
           ) : days < 0 ? (
@@ -177,6 +177,11 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
           ) : (
             <span className="text-[10px] font-medium text-muted-foreground">{days} 天后到期</span>
           )}
+          {node.price && node.price > 0 ? (
+            <span className="text-[10px] font-medium text-muted-foreground/80 tnum">
+              续费: {money(node.price, node.currency)} / {CYCLES[node.billing_cycle] ?? node.billing_cycle ?? "月付"}
+            </span>
+          ) : null}
         </div>
       </div>
     </div>

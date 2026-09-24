@@ -18,7 +18,7 @@ import {
 import { Meter } from "@/components/Meter"
 import { CountryFlag } from "@/components/CountryFlag"
 import { useNodeLatency, type Node } from "@/lib/api"
-import { bytes, daysUntil, FOREVER, osName, pair, percent, rate, uptime } from "@/lib/format"
+import { bytes, CYCLES, daysUntil, FOREVER, money, osName, pair, percent, rate, uptime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 const DISTROS: [string, SimpleIcon][] = [
@@ -135,6 +135,16 @@ function ExpiryPill({ node }: { node: Node }) {
       )}
     >
       {isExpired ? `已过期 ${-days} 天` : isToday ? "今日到期" : `${days} 天后到期`}
+    </span>
+  )
+}
+
+function PricePill({ node }: { node: Node }) {
+  if (!node.price || node.price <= 0) return null
+  const cycleText = CYCLES[node.billing_cycle] ?? node.billing_cycle ?? "月付"
+  return (
+    <span className="tnum rounded-full bg-muted/40 px-2.5 py-0.5 text-[10px] text-muted-foreground font-medium border border-border/30 select-none">
+      {money(node.price, node.currency)} / {cycleText}
     </span>
   )
 }
@@ -353,7 +363,10 @@ export function NodeCard({ node, onOpen }: { node: Node; onOpen: () => void }) {
 
             <div className="flex shrink-0 flex-col items-end gap-1.5">
               <StatusPill node={node} />
-              <ExpiryPill node={node} />
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                <PricePill node={node} />
+                <ExpiryPill node={node} />
+              </div>
             </div>
           </div>
 

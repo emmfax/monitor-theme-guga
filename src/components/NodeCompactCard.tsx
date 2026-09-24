@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp } from "lucide-react"
 import { CountryFlag } from "@/components/CountryFlag"
 import { type Node, useNodeLatency } from "@/lib/api"
-import { bytes, daysUntil, FOREVER, pair, percent, rate, uptime } from "@/lib/format"
+import { bytes, CYCLES, daysUntil, FOREVER, money, pair, percent, rate, uptime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => void }) {
@@ -43,6 +43,11 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
             <span className={cn("size-1.5 rounded-full", node.online ? "bg-ok animate-pulse-dot" : "bg-destructive")} />
             {node.online ? (m ? uptime(m.uptime) : "在线") : "离线"}
           </span>
+          {node.price && node.price > 0 ? (
+            <span className="tnum text-[10px] font-medium text-foreground/80 bg-muted/50 px-1.5 py-0.2 rounded-full border border-border/30">
+              {money(node.price, node.currency)}/{CYCLES[node.billing_cycle] ?? "月"}
+            </span>
+          ) : null}
           {days !== null && (
             <span
               className={cn(

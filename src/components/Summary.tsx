@@ -12,8 +12,48 @@ import {
 } from "lucide-react"
 
 import { speedHistory, type Node } from "@/lib/api"
-import { bytes, pair, percent, rate, uptime } from "@/lib/format"
+import { bytes, money, pair, percent, rate, uptime } from "@/lib/format"
 import { cn } from "@/lib/utils"
+
+function calcMonthlyCost(nodes: Node[]): string {
+  const byCurrency = new Map<string, number>()
+  for (const n of nodes) {
+    if (n.price && n.price > 0) {
+      const cur = n.currency || "CNY"
+      let monthly = n.price
+      switch (n.billing_cycle) {
+        case "quarterly":
+          monthly = n.price / 3
+          break
+        case "semiannual":
+          monthly = n.price / 6
+          break
+        case "yearly":
+          monthly = n.price / 12
+          break
+        case "biennial":
+          monthly = n.price / 24
+          break
+        case "triennial":
+          monthly = n.price / 36
+          break
+        case "once":
+          monthly = 0
+          break
+        default:
+          monthly = n.price
+      }
+      if (monthly > 0) {
+        byCurrency.set(cur, (byCurrency.get(cur) ?? 0) + monthly)
+      }
+    }
+  }
+
+  if (byCurrency.size === 0) return ""
+  return Array.from(byCurrency.entries())
+    .map(([cur, total]) => `${money(total, cur)}/月`)
+    .join(" · ")
+}
 
 type PeakMode = "cpu" | "mem" | "net" | "uptime"
 
@@ -146,6 +186,7 @@ export function Summary({
 
   const history = speedHistory.get(group) ?? []
   const now = history.at(-1) ?? { rx: 0, tx: 0 }
+  const monthlyCostText = calcMonthlyCost(nodes)
 
   if (collapsed) {
     return (
@@ -161,7 +202,7 @@ export function Summary({
           </span>
           <span className="text-border/60 hidden md:inline shrink-0">/</span>
           <span className="text-muted-foreground hidden md:inline shrink-0">
-            速率: <span className="tnum font-medium text-foreground">{rate(now.rx + now.tx)}</span>
+            实时: <span className="tnum font-medium text-foreground">↓{rate(now.rx)} · ↑{rate(now.tx)}</span>
           </span>
           <span className="text-border/60 hidden md:inline shrink-0">/</span>
           <span className="text-muted-foreground hidden md:inline shrink-0">
@@ -169,14 +210,22 @@ export function Summary({
           </span>
         </div>
 
-        {/* User Site Name on the far right of the collapsed summary bar */}
-        {siteName && (
-          <div className="flex items-center pl-3 border-l border-border/40 shrink-0 ml-2">
-            <span className="text-xs font-semibold text-foreground tracking-tight">
-              {siteName}
-            </span>
-          </div>
-        )}
+        {/* Right: Monthly Cost & Site Name */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 ml-2">
+          {monthlyCostText && (
+            <div className="hidden sm:flex items-center text-xs text-muted-foreground">
+              <span>月成本:</span>
+              <span className="tnum font-semibold text-foreground ml-1">{monthlyCostText}</span>
+            </div>
+          )}
+          {siteName && (
+            <div className="flex items-center pl-2.5 sm:pl-3 border-l border-border/40">
+              <span className="text-xs font-semibold text-foreground tracking-tight">
+                {siteName}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -239,9 +288,19 @@ export function Summary({
           )
         }
       >
-        <div className="tnum text-2xl font-semibold tracking-tight text-foreground">
-          {online.length}
-          <span className="text-sm font-normal text-muted-foreground ml-1.5">/ {nodes.length} 在线</span>
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="tnum text-2xl font-semibold tracking-tight text-foreground">
+            {online.length}
+            <span className="text-sm font-normal text-muted-foreground ml-1.5">/ {nodes.length} 在线</span>
+          </div>
+          {monthlyCostText && (
+            <div className="text-right">
+              <span className="text-[10px] text-muted-foreground font-medium block">月度成本</span>
+              <span className="tnum text-base sm:text-lg font-bold text-foreground tracking-tight">
+                {monthlyCostText}
+              </span>
+            </div>
+          )}
         </div>
         {group && (
           <div className="mt-1 text-xs text-muted-foreground truncate font-normal">
