@@ -254,12 +254,22 @@ export default function App() {
     if (persist) localStorage.setItem("theme_show_sparkline", String(show))
   }, [])
 
+  const [showMap, setShowMap] = useState<boolean>(() => {
+    return localStorage.getItem("theme_show_map") === "true"
+  })
+  const updateShowMap = useCallback((show: boolean, persist = true) => {
+    setShowMap(show)
+    if (persist) localStorage.setItem("theme_show_map", String(show))
+  }, [])
+
   const [me, setMe] = useState<Me | null>(null)
   const [meError, setMeError] = useState("")
   const { nodes, error, closed } = useNodes()
   const [open, go] = useNodeRoute()
   const [group, setGroup] = useState<string | null>(null)
-  const [mapModalOpen, setMapModalOpen] = useState(false)
+  const [mapModalOpen, setMapModalOpen] = useState(() => {
+    return localStorage.getItem("theme_show_map") === "true"
+  })
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [fabOpen, setFabOpen] = useState(false)
 
@@ -331,6 +341,12 @@ export default function App() {
       if (localStorage.getItem("theme_show_sparkline") === null && cfg.show_sparkline !== undefined) {
         updateShowSparkline(cfg.show_sparkline !== false, false)
       }
+      if (localStorage.getItem("theme_show_map") === null && cfg.show_map !== undefined) {
+        updateShowMap(Boolean(cfg.show_map), false)
+        if (cfg.show_map) {
+          setMapModalOpen(true)
+        }
+      }
     })
   }, [
     setPalette,
@@ -345,6 +361,7 @@ export default function App() {
     updateColCount,
     updateSummaryCollapsed,
     updateShowSparkline,
+    updateShowMap,
   ])
 
   const handleResetPreferences = useCallback(() => {
@@ -362,6 +379,7 @@ export default function App() {
     localStorage.removeItem("theme_columns")
     localStorage.removeItem("theme_summary_collapsed")
     localStorage.removeItem("theme_show_sparkline")
+    localStorage.removeItem("theme_show_map")
 
     const defPalette = config?.palette ?? "mono"
     const defMode = config?.theme_mode ?? "system"
@@ -373,6 +391,7 @@ export default function App() {
     const defCols = config?.columns ?? 3
     const defSummary = config?.show_summary !== undefined ? !config.show_summary : true
     const defSpark = config?.show_sparkline !== undefined ? config.show_sparkline !== false : true
+    const defMap = config?.show_map ?? false
 
     setPalette(defPalette, false)
     setThemeMode(defMode, false)
@@ -386,6 +405,7 @@ export default function App() {
     updateColCount(defCols, false)
     updateSummaryCollapsed(defSummary, false)
     updateShowSparkline(defSpark, false)
+    updateShowMap(defMap, false)
   }, [
     config,
     setPalette,
@@ -400,6 +420,7 @@ export default function App() {
     updateColCount,
     updateSummaryCollapsed,
     updateShowSparkline,
+    updateShowMap,
   ])
 
   const handleSaveSiteDefaults = useCallback(async () => {
@@ -426,6 +447,7 @@ export default function App() {
       columns: colCount,
       default_view: viewMode,
       show_summary: !summaryCollapsed,
+      show_map: showMap,
       show_sparkline: showSparkline,
     }
 
@@ -444,6 +466,7 @@ export default function App() {
     colCount,
     viewMode,
     summaryCollapsed,
+    showMap,
     showSparkline,
   ])
 
@@ -735,6 +758,8 @@ export default function App() {
         onSummaryCollapsedChange={updateSummaryCollapsed}
         showSparkline={showSparkline}
         onShowSparklineChange={updateShowSparkline}
+        showMap={showMap}
+        onShowMapChange={updateShowMap}
         onResetAll={handleResetPreferences}
         isAuthed={me?.authed}
         onSaveSiteDefaults={handleSaveSiteDefaults}

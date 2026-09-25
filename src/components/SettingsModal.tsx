@@ -53,6 +53,8 @@ export interface SettingsModalProps {
   onSummaryCollapsedChange: (collapsed: boolean) => void
   showSparkline: boolean
   onShowSparklineChange: (show: boolean) => void
+  showMap: boolean
+  onShowMapChange: (show: boolean) => void
   onResetAll: () => void
   isAuthed?: boolean
   onSaveSiteDefaults?: () => Promise<void>
@@ -116,6 +118,8 @@ export function SettingsModal({
   onSummaryCollapsedChange,
   showSparkline,
   onShowSparklineChange,
+  showMap = false,
+  onShowMapChange,
   onResetAll,
   isAuthed = false,
   onSaveSiteDefaults,
@@ -201,9 +205,10 @@ export function SettingsModal({
                 className={cn(
                   "flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-medium border transition-all cursor-pointer active:scale-95",
                   themeMode === "system"
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
+                    ? "bg-primary/15 text-foreground border-primary shadow-2xs font-semibold ring-1 ring-primary/30"
                     : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
                 )}
+                title="外观模式：跟随操作系统与浏览器深浅主题自动无缝切换"
               >
                 <Monitor className="size-4" />
                 <span>跟随系统</span>
@@ -215,9 +220,10 @@ export function SettingsModal({
                 className={cn(
                   "flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-medium border transition-all cursor-pointer active:scale-95",
                   themeMode === "light"
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
+                    ? "bg-primary/15 text-foreground border-primary shadow-2xs font-semibold ring-1 ring-primary/30"
                     : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
                 )}
+                title="外观模式：强制使用明亮浅色主题"
               >
                 <Sun className="size-4" />
                 <span>浅色模式</span>
@@ -229,9 +235,10 @@ export function SettingsModal({
                 className={cn(
                   "flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-medium border transition-all cursor-pointer active:scale-95",
                   themeMode === "dark"
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
+                    ? "bg-primary/15 text-foreground border-primary shadow-2xs font-semibold ring-1 ring-primary/30"
                     : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
                 )}
+                title="外观模式：强制使用沉浸深色主题"
               >
                 <Moon className="size-4" />
                 <span>深色模式</span>
@@ -244,7 +251,19 @@ export function SettingsModal({
             {/* 纯黑白极简字色开关 */}
             <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/50">
               <div className="space-y-0.5 pr-2">
-                <div className="text-xs font-semibold text-foreground">纯黑白极简字色</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-foreground">纯黑白极简字色</span>
+                  <span
+                    className={cn(
+                      "text-[10px] px-1.5 py-0.2 rounded-full font-medium transition-colors",
+                      monochrome
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {monochrome ? "已开启" : "已关闭"}
+                  </span>
+                </div>
                 <div className="text-[11px] text-muted-foreground leading-snug">
                   去除速率与指标彩色，转为纯黑白灰度，极致精简不臃肿
                 </div>
@@ -255,16 +274,20 @@ export function SettingsModal({
                 aria-checked={monochrome}
                 onClick={() => onMonochromeChange(!monochrome)}
                 className={cn(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  monochrome ? "bg-primary" : "bg-muted"
+                  "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95 shrink-0 flex items-center gap-1.5",
+                  monochrome
+                    ? "bg-primary/15 border-primary text-primary shadow-2xs"
+                    : "bg-muted text-muted-foreground border-border/40 hover:text-foreground"
                 )}
+                title={monochrome ? "纯黑白字色：当前已开启（点击切换关闭）" : "纯黑白字色：当前已关闭（点击切换开启）"}
               >
                 <span
                   className={cn(
-                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
-                    monochrome ? "translate-x-5" : "translate-x-0"
+                    "size-1.5 rounded-full transition-all",
+                    monochrome ? "bg-primary animate-pulse-dot" : "bg-muted-foreground/60"
                   )}
                 />
+                <span>{monochrome ? "已开启" : "已关闭"}</span>
               </button>
             </div>
           </Section>
@@ -591,8 +614,9 @@ export function SettingsModal({
 
           {/* 5. 看板与图表功能 */}
           <Section icon={Layers} title="看板与图表功能">
-            {/* Feature Toggles: Summary bar & Sparkline */}
+            {/* Feature Toggles: Summary bar & Sparkline & WorldMap */}
             <div className="space-y-3">
+              {/* 1. 顶部统计看板 */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <span className="text-xs font-medium text-foreground block">顶部统计看板</span>
@@ -602,16 +626,24 @@ export function SettingsModal({
                   type="button"
                   onClick={() => onSummaryCollapsedChange(!summaryCollapsed)}
                   className={cn(
-                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95",
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95 flex items-center gap-1.5",
                     !summaryCollapsed
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "bg-muted text-muted-foreground border-border/40"
+                      ? "bg-primary/15 border-primary text-primary shadow-2xs"
+                      : "bg-muted text-muted-foreground border-border/40 hover:text-foreground"
                   )}
+                  title={!summaryCollapsed ? "顶部看板：当前默认展开（点击改为默认收起）" : "顶部看板：当前默认收起（点击改为默认展开）"}
                 >
-                  {!summaryCollapsed ? "默认展开" : "默认收起"}
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full transition-all",
+                      !summaryCollapsed ? "bg-primary animate-pulse-dot" : "bg-muted-foreground/60"
+                    )}
+                  />
+                  <span>{!summaryCollapsed ? "默认展开" : "默认收起"}</span>
                 </button>
               </div>
 
+              {/* 2. 实时网速折线图 */}
               <div className="flex items-center justify-between pt-1 border-t border-border/20">
                 <div className="space-y-0.5">
                   <span className="text-xs font-medium text-foreground block">实时网速折线图</span>
@@ -621,13 +653,47 @@ export function SettingsModal({
                   type="button"
                   onClick={() => onShowSparklineChange(!showSparkline)}
                   className={cn(
-                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95",
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95 flex items-center gap-1.5",
                     showSparkline
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "bg-muted text-muted-foreground border-border/40"
+                      ? "bg-primary/15 border-primary text-primary shadow-2xs"
+                      : "bg-muted text-muted-foreground border-border/40 hover:text-foreground"
                   )}
+                  title={showSparkline ? "实时网速折线图：当前已开启（点击隐藏）" : "实时网速折线图：当前已隐藏（点击开启）"}
                 >
-                  {showSparkline ? "开启" : "隐藏"}
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full transition-all",
+                      showSparkline ? "bg-primary animate-pulse-dot" : "bg-muted-foreground/60"
+                    )}
+                  />
+                  <span>{showSparkline ? "已开启" : "已隐藏"}</span>
+                </button>
+              </div>
+
+              {/* 3. 全球节点地图 */}
+              <div className="flex items-center justify-between pt-1 border-t border-border/20">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-medium text-foreground block">全球节点地图</span>
+                  <span className="text-[10px] text-muted-foreground">打开网页时是否默认展开节点分布世界地图</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onShowMapChange(!showMap)}
+                  className={cn(
+                    "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95 flex items-center gap-1.5",
+                    showMap
+                      ? "bg-primary/15 border-primary text-primary shadow-2xs"
+                      : "bg-muted text-muted-foreground border-border/40 hover:text-foreground"
+                  )}
+                  title={showMap ? "全球节点地图：当前默认展开（点击改为默认收起）" : "全球节点地图：当前默认收起（点击改为默认展开）"}
+                >
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full transition-all",
+                      showMap ? "bg-primary animate-pulse-dot" : "bg-muted-foreground/60"
+                    )}
+                  />
+                  <span>{showMap ? "默认展开" : "默认收起"}</span>
                 </button>
               </div>
             </div>
