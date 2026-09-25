@@ -2,7 +2,7 @@
   "name": "Guga",
   "short": "guga",
   "description": "极简清新风格服务器监控主题，支持毛玻璃、自定义壁纸与多端自适应",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "author": "emmfax",
   "url": "https://github.com/emmfax/monitor-theme-guga",
   "config": [
@@ -48,7 +48,7 @@
       "help": "服务器卡片的背景视觉样式",
       "options": [
         { "value": "solid", "label": "纯色卡片 (默认)" },
-        { "value": "transparent", "label": "透明卡片" },
+        { "value": "transparent", "label": "玻璃 (晶莹透光)" },
         { "value": "blur", "label": "毛玻璃卡片" }
       ]
     },
@@ -59,7 +59,7 @@
       "default": 40,
       "min": 0,
       "max": 100,
-      "help": "在毛玻璃或透明卡片模式下生效，0-100%，数值越大磨砂感越深，默认 40"
+      "help": "在毛玻璃或玻璃模式下生效，0-100%，数值为0即无模糊完全通透，默认 40"
     },
     {
       "key": "bg_blur",
@@ -135,6 +135,13 @@
       "label": "默认展开顶部统计",
       "default": false,
       "help": "打开网页时是否自动展开最上面的总流量与网速统计"
+    },
+    {
+      "key": "show_toolbar",
+      "type": "boolean",
+      "label": "默认展开搜索与工具栏",
+      "default": true,
+      "help": "打开网页时是否自动展开节点搜索与筛选工具栏"
     },
     {
       "key": "show_map",

@@ -51,6 +51,8 @@ export interface SettingsModalProps {
   onColCountChange?: (cols: number) => void
   summaryCollapsed: boolean
   onSummaryCollapsedChange: (collapsed: boolean) => void
+  toolbarExpanded?: boolean
+  onToolbarExpandedChange?: (expanded: boolean) => void
   showSparkline: boolean
   onShowSparklineChange: (show: boolean) => void
   showMap: boolean
@@ -116,6 +118,8 @@ export function SettingsModal({
   onBgMaskChange,
   summaryCollapsed,
   onSummaryCollapsedChange,
+  toolbarExpanded = true,
+  onToolbarExpandedChange,
   showSparkline,
   onShowSparklineChange,
   showMap = false,
@@ -361,12 +365,12 @@ export function SettingsModal({
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <Sparkles className="size-3.5 text-sky-400 shrink-0" />
-                    <span className="text-xs font-semibold text-foreground truncate">透明卡片</span>
+                    <span className="text-xs font-semibold text-foreground truncate">玻璃</span>
                   </div>
                   {cardStyle === "transparent" && <Check className="size-3 text-primary shrink-0" />}
                 </div>
                 <span className="text-[10px] sm:text-[11px] text-muted-foreground font-normal leading-tight line-clamp-2">
-                  通透壁纸直出
+                  晶莹透光玻璃
                 </span>
               </button>
 
@@ -642,6 +646,35 @@ export function SettingsModal({
                   <span>{!summaryCollapsed ? "默认展开" : "默认收起"}</span>
                 </button>
               </div>
+
+              {/* 1.5 搜索与筛选工具栏 */}
+              {onToolbarExpandedChange && (
+                <div className="flex items-center justify-between pt-1 border-t border-border/20">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-medium text-foreground block">搜索与筛选工具栏</span>
+                    <span className="text-[10px] text-muted-foreground">打开网页时是否默认展开节点搜索与筛选工具栏</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onToolbarExpandedChange(!toolbarExpanded)}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all cursor-pointer active:scale-95 flex items-center gap-1.5",
+                      toolbarExpanded
+                        ? "bg-primary/15 border-primary text-primary shadow-2xs"
+                        : "bg-muted text-muted-foreground border-border/40 hover:text-foreground"
+                    )}
+                    title={toolbarExpanded ? "搜索与筛选栏：当前默认展开（点击改为默认收起）" : "搜索与筛选栏：当前默认收起（点击改为默认展开）"}
+                  >
+                    <span
+                      className={cn(
+                        "size-1.5 rounded-full transition-all",
+                        toolbarExpanded ? "bg-primary animate-pulse-dot" : "bg-muted-foreground/60"
+                      )}
+                    />
+                    <span>{toolbarExpanded ? "默认展开" : "默认收起"}</span>
+                  </button>
+                </div>
+              )}
 
               {/* 2. 实时网速折线图 */}
               <div className="flex items-center justify-between pt-1 border-t border-border/20">

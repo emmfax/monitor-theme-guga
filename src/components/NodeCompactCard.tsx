@@ -45,7 +45,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
             <span className="truncate text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors block">
               {node.name}
             </span>
-            <div className="text-[10px] text-muted-foreground truncate font-normal">
+            <div className="text-[10px] text-foreground/75 truncate font-normal">
               {node.os ? osName(node.os) : "等待上报"}
               {node.arch ? ` · ${node.arch}` : ""}
             </div>
@@ -64,11 +64,11 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
           </span>
 
           {(isFree || priceStr || expiryStr) && (
-            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-muted-foreground tnum font-normal select-none">
+            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-foreground/75 tnum font-normal select-none">
               {isFree ? (
-                <span className="font-normal text-muted-foreground/80">免费</span>
+                <span className="font-normal text-foreground/70">免费</span>
               ) : priceStr ? (
-                <span className="font-medium text-foreground/80">{priceStr}</span>
+                <span className="font-medium text-foreground/85">{priceStr}</span>
               ) : null}
               {(isFree || priceStr) && expiryStr && (
                 <span className="text-border/60">·</span>
@@ -91,7 +91,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
       <div className="my-1.5 sm:my-2.5 grid grid-cols-4 gap-1.5 sm:gap-2">
         {/* CPU */}
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center justify-between text-[9px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[9px] font-medium text-foreground/75">
             <span>CPU</span>
             <span className="tnum font-semibold text-foreground">{cpuPct !== null ? `${cpuPct.toFixed(0)}%` : "—"}</span>
           </div>
@@ -108,7 +108,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
 
         {/* RAM */}
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center justify-between text-[9px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[9px] font-medium text-foreground/75">
             <span>内存</span>
             <span className="tnum font-semibold text-foreground">{memPct !== null ? `${memPct.toFixed(0)}%` : "—"}</span>
           </div>
@@ -125,7 +125,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
 
         {/* Disk */}
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center justify-between text-[9px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[9px] font-medium text-foreground/75">
             <span>存储</span>
             <span className="tnum font-semibold text-foreground">{diskPct !== null ? `${diskPct.toFixed(0)}%` : "—"}</span>
           </div>
@@ -142,7 +142,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
 
         {/* Traffic */}
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center justify-between text-[9px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[9px] font-medium text-foreground/75">
             <span>流量</span>
             <span className="tnum font-semibold text-foreground">{trafficPct !== null ? `${trafficPct.toFixed(0)}%` : FOREVER}</span>
           </div>
@@ -159,7 +159,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
       </div>
 
       {/* 3. Footer: Rate, Latency & Traffic */}
-      <div className="pt-1.5 sm:pt-2 border-t border-border/25 space-y-1 text-[10px] text-muted-foreground select-none">
+      <div className="pt-1.5 sm:pt-2 border-t border-border/25 space-y-1 text-[10px] text-foreground/80 select-none">
         {/* Top: Live Speed & Latency (plus mobile monthly traffic) */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 font-semibold tnum">
@@ -176,7 +176,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
           <div className="flex items-center gap-2">
             {node.online && avgMs !== null && (
               <span className="flex items-center gap-1 text-[10px]">
-                <span className="text-muted-foreground font-medium">平延:</span>
+                <span className="text-foreground/70 font-medium">平延:</span>
                 <span
                   className={cn(
                     "tnum font-semibold",
@@ -194,12 +194,12 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
         </div>
 
         {/* Bottom (Desktop / Tablet only): Month Usage & Cumulative Traffic */}
-        <div className="hidden sm:flex items-center justify-between text-muted-foreground/85 text-[10px] pt-0.5">
+        <div className="hidden sm:flex items-center justify-between text-foreground/80 text-[10px] pt-0.5">
           <div className="tnum font-normal truncate pr-1">
-            <span>月用量: </span>
-            <span className="font-semibold text-foreground">{trafficFoot}</span>
+            <span className="text-foreground/70 font-medium">月用量: </span>
+            <span className="font-bold text-foreground">{trafficFoot}</span>
           </div>
-          <div className="tnum font-normal text-muted-foreground/80 shrink-0">
+          <div className="tnum font-normal text-foreground/75 shrink-0">
             <span>↓ {bytes(node.total_rx)}</span>
             <span className="ml-1">↑ {bytes(node.total_tx)}</span>
           </div>

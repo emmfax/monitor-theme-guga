@@ -204,7 +204,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
                 {node.online ? "在线" : "离线"}
               </span>
             </div>
-            <div className="text-[11px] text-muted-foreground truncate font-normal">
+            <div className="text-[11px] text-foreground/75 truncate font-normal">
               {node.os ? osName(node.os) : "等待上报"}
               {node.arch ? ` · ${node.arch}` : ""}
             </div>
@@ -213,10 +213,10 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
       </div>
 
       {/* 2. Resources: CPU, RAM, Disk, Traffic (Desktop) */}
-      <div className="hidden lg:grid grid-cols-4 gap-3 w-[320px] shrink-0">
+      <div className="hidden lg:grid grid-cols-4 gap-3 w-[360px] shrink-0">
         {/* CPU */}
         <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[10px] font-medium text-foreground/75">
             <span>CPU</span>
             <span className="tnum font-semibold text-foreground">{cpuPct !== null ? `${cpuPct.toFixed(0)}%` : "—"}</span>
           </div>
@@ -233,7 +233,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
 
         {/* RAM */}
         <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[10px] font-medium text-foreground/75">
             <span>内存</span>
             <span className="tnum font-semibold text-foreground">{memPct !== null ? `${memPct.toFixed(0)}%` : "—"}</span>
           </div>
@@ -250,7 +250,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
 
         {/* Disk */}
         <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[10px] font-medium text-foreground/75">
             <span>存储</span>
             <span className="tnum font-semibold text-foreground">{diskPct !== null ? `${diskPct.toFixed(0)}%` : "—"}</span>
           </div>
@@ -267,7 +267,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
 
         {/* Traffic */}
         <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between text-[10px] font-medium text-foreground/75">
             <span>流量</span>
             <span className="tnum font-semibold text-foreground">
               {trafficPct !== null ? `${trafficPct.toFixed(0)}%` : FOREVER}
@@ -302,7 +302,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
 
       {/* 3.5 Average Latency (Desktop) */}
       <div className="hidden lg:flex items-center gap-1.5 w-[90px] shrink-0 text-xs select-none">
-        <span className="text-[11px] text-muted-foreground font-medium shrink-0">平延:</span>
+        <span className="text-[11px] text-foreground/70 font-medium shrink-0">平延:</span>
         {node.online && avgMs !== null ? (
           <span
             className={cn(
@@ -313,18 +313,18 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
             {avgMs <= 0 ? "超时" : `${avgMs}ms`}
           </span>
         ) : (
-          <span className="text-[11px] text-muted-foreground w-[48px]">—</span>
+          <span className="text-[11px] text-foreground/50 w-[48px]">—</span>
         )}
       </div>
 
       {/* 4. Traffic Usage & Expiry (Desktop) */}
       <div className="hidden lg:flex items-center justify-end gap-3.5 sm:gap-4 w-[230px] shrink-0 text-xs">
-        <div className="text-[11px] text-muted-foreground tnum font-normal flex flex-col items-end gap-0.5">
+        <div className="text-[11px] text-foreground/80 tnum font-normal flex flex-col items-end gap-0.5">
           <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">月用量:</span>
-            <span className="font-semibold text-foreground">{trafficUsage}</span>
+            <span className="text-foreground/70 font-medium">月用量:</span>
+            <span className="font-bold text-foreground">{trafficUsage}</span>
           </div>
-          <div className="text-[10px] text-muted-foreground/75 flex items-center gap-1">
+          <div className="text-[10px] text-foreground/75 font-medium flex items-center gap-1">
             <span>总计:</span>
             <span>↓ {bytes(node.total_rx)}</span>
             <span>↑ {bytes(node.total_tx)}</span>
@@ -332,7 +332,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         </div>
         <div className="shrink-0 text-right flex flex-col items-end gap-1">
           {days === null ? (
-            <span className="text-[10px] font-medium text-muted-foreground">永久有效 ∞</span>
+            <span className="text-[10px] font-semibold text-foreground/80">永久有效 ∞</span>
           ) : days < 0 ? (
             <span className="text-[10px] font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
               已过期 {-days}天
@@ -340,12 +340,12 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
           ) : days === 0 ? (
             <span className="text-[10px] font-medium text-warn bg-warn/15 px-2 py-0.5 rounded-full">今日到期</span>
           ) : (
-            <span className="text-[10px] font-medium text-muted-foreground">{days} 天后到期</span>
+            <span className="text-[10px] font-semibold text-foreground/85">{days} 天后到期</span>
           )}
           {isFree ? (
-            <span className="text-[10px] font-medium text-muted-foreground/80 tnum">续费: 免费</span>
+            <span className="text-[10px] font-medium text-foreground/70 tnum">续费: 免费</span>
           ) : node.price && node.price > 0 ? (
-            <span className="text-[10px] font-medium text-muted-foreground/80 tnum">
+            <span className="text-[10px] font-medium text-foreground/70 tnum">
               续费: {money(node.price, node.currency)} / {CYCLES[node.billing_cycle] ?? node.billing_cycle ?? "月付"}
             </span>
           ) : null}

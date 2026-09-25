@@ -244,6 +244,16 @@ export default function App() {
     if (persist) localStorage.setItem("theme_summary_collapsed", String(collapsed))
   }, [])
 
+  const [toolbarExpanded, setToolbarExpanded] = useState<boolean>(() => {
+    const saved = localStorage.getItem("theme_toolbar_expanded")
+    if (saved !== null) return saved === "true"
+    return true
+  })
+  const updateToolbarExpanded = useCallback((expanded: boolean, persist = true) => {
+    setToolbarExpanded(expanded)
+    if (persist) localStorage.setItem("theme_toolbar_expanded", String(expanded))
+  }, [])
+
   const [showSparkline, setShowSparkline] = useState<boolean>(() => {
     const saved = localStorage.getItem("theme_show_sparkline")
     if (saved !== null) return saved === "true"
@@ -284,21 +294,38 @@ export default function App() {
       root.style.setProperty("--glass-blur", "0px")
       root.style.setProperty("--glass-bg-opacity", "1")
       root.style.setProperty("--pill-bg-opacity", "1")
+      root.setAttribute("data-card-blur-zero", "true")
     } else if (cardStyle === "transparent") {
-      const px = Math.round((cardBlur / 100) * 28)
-      const op = (0.20 + (cardBlur / 100) * 0.35).toFixed(2)
-      const pillOp = (0.20 + (cardBlur / 100) * 0.35).toFixed(2)
-      root.style.setProperty("--glass-blur", `${px}px`)
-      root.style.setProperty("--glass-bg-opacity", op)
-      root.style.setProperty("--pill-bg-opacity", pillOp)
+      if (cardBlur === 0) {
+        root.style.setProperty("--glass-blur", "0px")
+        root.style.setProperty("--glass-bg-opacity", "0.08")
+        root.style.setProperty("--pill-bg-opacity", "0.08")
+        root.setAttribute("data-card-blur-zero", "true")
+      } else {
+        const px = Math.round((cardBlur / 100) * 28)
+        const op = (0.20 + (cardBlur / 100) * 0.40).toFixed(2)
+        const pillOp = (0.20 + (cardBlur / 100) * 0.35).toFixed(2)
+        root.style.setProperty("--glass-blur", `${px}px`)
+        root.style.setProperty("--glass-bg-opacity", op)
+        root.style.setProperty("--pill-bg-opacity", pillOp)
+        root.removeAttribute("data-card-blur-zero")
+      }
     } else {
       // "blur" mode: frosted glass with dynamic cardBlur & opacity coupling
-      const px = Math.round((cardBlur / 100) * 36)
-      const op = (0.35 + (cardBlur / 100) * 0.45).toFixed(2)
-      const pillOp = (0.35 + (cardBlur / 100) * 0.40).toFixed(2)
-      root.style.setProperty("--glass-blur", `${px}px`)
-      root.style.setProperty("--glass-bg-opacity", op)
-      root.style.setProperty("--pill-bg-opacity", pillOp)
+      if (cardBlur === 0) {
+        root.style.setProperty("--glass-blur", "0px")
+        root.style.setProperty("--glass-bg-opacity", "0.85")
+        root.style.setProperty("--pill-bg-opacity", "0.85")
+        root.setAttribute("data-card-blur-zero", "true")
+      } else {
+        const px = Math.round((cardBlur / 100) * 36)
+        const op = (0.45 + (cardBlur / 100) * 0.45).toFixed(2)
+        const pillOp = (0.45 + (cardBlur / 100) * 0.40).toFixed(2)
+        root.style.setProperty("--glass-blur", `${px}px`)
+        root.style.setProperty("--glass-bg-opacity", op)
+        root.style.setProperty("--pill-bg-opacity", pillOp)
+        root.removeAttribute("data-card-blur-zero")
+      }
     }
   }, [cardStyle, cardBlur, monochrome])
 
@@ -338,6 +365,9 @@ export default function App() {
       if (localStorage.getItem("theme_summary_collapsed") === null && cfg.show_summary !== undefined) {
         updateSummaryCollapsed(!cfg.show_summary, false)
       }
+      if (localStorage.getItem("theme_toolbar_expanded") === null && cfg.show_toolbar !== undefined) {
+        updateToolbarExpanded(cfg.show_toolbar, false)
+      }
       if (localStorage.getItem("theme_show_sparkline") === null && cfg.show_sparkline !== undefined) {
         updateShowSparkline(cfg.show_sparkline !== false, false)
       }
@@ -360,6 +390,7 @@ export default function App() {
     updateViewMode,
     updateColCount,
     updateSummaryCollapsed,
+    updateToolbarExpanded,
     updateShowSparkline,
     updateShowMap,
   ])
@@ -378,6 +409,7 @@ export default function App() {
     localStorage.removeItem("theme_view_mode")
     localStorage.removeItem("theme_columns")
     localStorage.removeItem("theme_summary_collapsed")
+    localStorage.removeItem("theme_toolbar_expanded")
     localStorage.removeItem("theme_show_sparkline")
     localStorage.removeItem("theme_show_map")
 
@@ -390,6 +422,7 @@ export default function App() {
     const defView = config?.default_view ?? "list"
     const defCols = config?.columns ?? 3
     const defSummary = config?.show_summary !== undefined ? !config.show_summary : true
+    const defToolbar = config?.show_toolbar !== undefined ? config.show_toolbar : true
     const defSpark = config?.show_sparkline !== undefined ? config.show_sparkline !== false : true
     const defMap = config?.show_map ?? false
 
@@ -404,6 +437,7 @@ export default function App() {
     updateViewMode(defView, false)
     updateColCount(defCols, false)
     updateSummaryCollapsed(defSummary, false)
+    updateToolbarExpanded(defToolbar, false)
     updateShowSparkline(defSpark, false)
     updateShowMap(defMap, false)
   }, [
@@ -419,6 +453,7 @@ export default function App() {
     updateViewMode,
     updateColCount,
     updateSummaryCollapsed,
+    updateToolbarExpanded,
     updateShowSparkline,
     updateShowMap,
   ])
@@ -447,6 +482,7 @@ export default function App() {
       columns: colCount,
       default_view: viewMode,
       show_summary: !summaryCollapsed,
+      show_toolbar: toolbarExpanded,
       show_map: showMap,
       show_sparkline: showSparkline,
     }
@@ -466,6 +502,7 @@ export default function App() {
     colCount,
     viewMode,
     summaryCollapsed,
+    toolbarExpanded,
     showMap,
     showSparkline,
   ])
@@ -557,10 +594,10 @@ export default function App() {
               transform: "scale(1.05)",
             }}
           />
-          {/* iOS Frosted Glass Translucent Scrim */}
+          {/* Wallpaper Translucent Scrim - Zero blur interference, pure opacity */}
           {bgMask > 0 && (
             <div
-              className="absolute inset-0 bg-white/40 dark:bg-black/50 backdrop-blur-xl transition-opacity duration-200"
+              className="absolute inset-0 bg-white/75 dark:bg-black/60 transition-opacity duration-200"
               style={{ opacity: bgMask / 100 }}
             />
           )}
@@ -631,6 +668,8 @@ export default function App() {
             onColCountChange={updateColCount}
             summaryCollapsed={summaryCollapsed}
             onToggleSummary={() => updateSummaryCollapsed(!summaryCollapsed)}
+            toolbarExpanded={toolbarExpanded}
+            onToggleToolbar={() => updateToolbarExpanded(!toolbarExpanded)}
             showSparkline={showSparkline}
             siteName={me?.site_name || "Guga"}
           />
@@ -756,6 +795,8 @@ export default function App() {
         onColCountChange={updateColCount}
         summaryCollapsed={summaryCollapsed}
         onSummaryCollapsedChange={updateSummaryCollapsed}
+        toolbarExpanded={toolbarExpanded}
+        onToolbarExpandedChange={updateToolbarExpanded}
         showSparkline={showSparkline}
         onShowSparklineChange={updateShowSparkline}
         showMap={showMap}
@@ -781,6 +822,8 @@ function NodeList({
   onColCountChange,
   summaryCollapsed,
   onToggleSummary,
+  toolbarExpanded = true,
+  onToggleToolbar,
   showSparkline = true,
   siteName,
 }: {
@@ -794,6 +837,8 @@ function NodeList({
   onColCountChange: (cols: number) => void
   summaryCollapsed: boolean
   onToggleSummary: () => void
+  toolbarExpanded?: boolean
+  onToggleToolbar?: () => void
   showSparkline?: boolean
   siteName?: string
 }) {
@@ -871,183 +916,199 @@ function NodeList({
       />
 
       {/* Unified Compact Toolbar */}
-      <div className="space-y-3 pt-1">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
-          {/* 1. Google-style Search Pill */}
-          <div className="relative flex-1 min-w-[200px] max-w-lg">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex size-4 items-center justify-center text-muted-foreground pointer-events-none">
-              <Search className="size-4 text-muted-foreground" />
-            </div>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="搜索节点、IP、系统、区域…"
-              className="glass-card h-10 w-full rounded-full border border-border/50 py-2 pl-10 pr-9 text-xs font-medium text-foreground placeholder:text-muted-foreground/60 shadow-2xs transition-colors focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15"
-            />
-            {query && (
-              <button
-                onClick={() => setQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* 2. Controls: Filter Chips + Column Switcher + View Switcher */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-0.5">
-            {/* Status Segmented Control */}
-            <div className="pill-bar inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5 sm:gap-1">
-              <button
-                onClick={() => setQuickFilter("all")}
-                className={cn(
-                  "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
-                  quickFilter === "all"
-                    ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <span>全部</span>
-                <span className="tnum text-[10px] sm:text-[11px] opacity-75">
-                  {query ? searchFiltered.length : groupFiltered.length}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setQuickFilter("online")}
-                className={cn(
-                  "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
-                  quickFilter === "online"
-                    ? "bg-ok text-white shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <span className="size-1.5 rounded-full bg-current" />
-                <span>在线</span>
-                <span className="tnum text-[10px] sm:text-[11px] opacity-80">{onlineCount}</span>
-              </button>
-
-              {highLoadCount > 0 && (
+      {toolbarExpanded ? (
+        <div className="space-y-3 pt-1">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+            {/* Left side: Toolbar Collapse Toggle + Search Pill */}
+            <div className="flex items-center gap-2 flex-1 max-w-xl">
+              {onToggleToolbar && (
                 <button
-                  onClick={() => setQuickFilter("high_load")}
-                  className={cn(
-                    "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
-                    quickFilter === "high_load"
-                      ? "bg-warn text-zinc-950 shadow-xs font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
+                  onClick={onToggleToolbar}
+                  className="pill-bar inline-flex h-9 sm:h-10 items-center justify-center gap-1 rounded-full px-2.5 sm:px-3 text-xs font-semibold border select-none shrink-0 active:scale-95 transition-all cursor-pointer bg-primary/10 text-primary border-primary/30"
+                  title="收起搜索与筛选工具栏"
                 >
-                  <Flame className="size-3.5" />
-                  <span className="hidden sm:inline">高负载</span>
-                  <span className="tnum text-[10px] sm:text-[11px]">({highLoadCount})</span>
+                  <SlidersHorizontal className="size-3.5 shrink-0" />
+                  <span className="text-xs hidden sm:inline">筛选</span>
+                  <ChevronUp className="size-3.5 shrink-0" />
                 </button>
               )}
 
-              {expiringCount > 0 && (
-                <button
-                  onClick={() => setQuickFilter("expiring")}
-                  className={cn(
-                    "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
-                    quickFilter === "expiring"
-                      ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Hourglass className="size-3.5" />
-                  <span className="hidden sm:inline">快到期</span>
-                  <span className="tnum text-[10px] sm:text-[11px]">({expiringCount})</span>
-                </button>
-              )}
-            </div>
-
-            {/* Column Switcher (Grid or Compact, Tablet/Desktop only) */}
-            {viewMode !== "list" && (
-              <div className="pill-bar hidden md:inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5">
-                {[2, 3, 4, 5].map((c) => (
+              {/* 1. Google-style Search Pill */}
+              <div className="relative flex-1 min-w-[160px]">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex size-4 items-center justify-center text-muted-foreground pointer-events-none">
+                  <Search className="size-4 text-muted-foreground" />
+                </div>
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="搜索节点、IP、系统、区域…"
+                  className="glass-card h-9 sm:h-10 w-full rounded-full border border-border/50 py-2 pl-9 sm:pl-10 pr-9 text-xs font-medium text-foreground placeholder:text-muted-foreground/60 transition-colors focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15"
+                />
+                {query && (
                   <button
-                    key={c}
-                    onClick={() => onColCountChange(c)}
+                    onClick={() => setQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* 2. Controls: Filter Chips + Column Switcher + View Switcher + Independent Kanban Toggle */}
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-0.5 isolate">
+              {/* Status Segmented Control */}
+              <div className="pill-bar inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5 sm:gap-1">
+                <button
+                  onClick={() => setQuickFilter("all")}
+                  className={cn(
+                    "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                    quickFilter === "all"
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span>全部</span>
+                  <span className="tnum text-[10px] sm:text-[11px] opacity-75">
+                    {query ? searchFiltered.length : groupFiltered.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setQuickFilter("online")}
+                  className={cn(
+                    "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                    quickFilter === "online"
+                      ? "bg-ok text-white font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span className="size-1.5 rounded-full bg-current" />
+                  <span>在线</span>
+                  <span className="tnum text-[10px] sm:text-[11px] opacity-80">{onlineCount}</span>
+                </button>
+
+                {highLoadCount > 0 && (
+                  <button
+                    onClick={() => setQuickFilter("high_load")}
                     className={cn(
-                      "flex h-7.5 sm:h-8 min-w-[32px] items-center justify-center rounded-full px-2 text-xs font-medium transition-all cursor-pointer",
-                      colCount === c
-                        ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                      "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                      quickFilter === "high_load"
+                        ? "bg-warn text-zinc-950 font-semibold"
                         : "text-muted-foreground hover:text-foreground"
                     )}
-                    title={`${c}列显示`}
                   >
-                    {c}列
+                    <Flame className="size-3.5" />
+                    <span className="hidden sm:inline">高负载</span>
+                    <span className="tnum text-[10px] sm:text-[11px]">({highLoadCount})</span>
                   </button>
-                ))}
+                )}
+
+                {expiringCount > 0 && (
+                  <button
+                    onClick={() => setQuickFilter("expiring")}
+                    className={cn(
+                      "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                      quickFilter === "expiring"
+                        ? "bg-primary text-primary-foreground font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Hourglass className="size-3.5" />
+                    <span className="hidden sm:inline">快到期</span>
+                    <span className="tnum text-[10px] sm:text-[11px]">({expiringCount})</span>
+                  </button>
+                )}
               </div>
-            )}
 
-            {/* View Mode Switcher */}
-            <div className="pill-bar inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5">
-              <button
-                onClick={() => onViewModeChange("grid")}
-                className={cn(
-                  "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
-                  viewMode === "grid"
-                    ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                title="网格视图"
-              >
-                <LayoutGrid className="size-3.5" />
-                <span className="hidden sm:inline text-xs">网格</span>
-              </button>
+              {/* Column Switcher (Grid or Compact, Tablet/Desktop only) */}
+              {viewMode !== "list" && (
+                <div className="pill-bar hidden md:inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5">
+                  {[2, 3, 4, 5].map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => onColCountChange(c)}
+                      className={cn(
+                        "flex h-7.5 sm:h-8 min-w-[32px] items-center justify-center rounded-full px-2 text-xs font-medium transition-all cursor-pointer",
+                        colCount === c
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      title={`${c}列显示`}
+                    >
+                      {c}列
+                    </button>
+                  ))}
+                </div>
+              )}
 
-              <button
-                onClick={() => onViewModeChange("compact")}
-                className={cn(
-                  "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
-                  viewMode === "compact"
-                    ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-                title="紧凑视图"
-              >
-                <Grid3X3 className="size-3.5" />
-                <span className="hidden sm:inline text-xs">紧凑</span>
-              </button>
+              {/* View Mode Switcher */}
+              <div className="pill-bar inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5">
+                <button
+                  onClick={() => onViewModeChange("grid")}
+                  className={cn(
+                    "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
+                    viewMode === "grid"
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="网格视图"
+                >
+                  <LayoutGrid className="size-3.5" />
+                  <span className="hidden sm:inline text-xs">网格</span>
+                </button>
 
+                <button
+                  onClick={() => onViewModeChange("compact")}
+                  className={cn(
+                    "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
+                    viewMode === "compact"
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="紧凑视图"
+                >
+                  <Grid3X3 className="size-3.5" />
+                  <span className="hidden sm:inline text-xs">紧凑</span>
+                </button>
+
+                <button
+                  onClick={() => onViewModeChange("list")}
+                  className={cn(
+                    "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
+                    viewMode === "list"
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title="列表视图"
+                >
+                  <List className="size-3.5" />
+                  <span className="hidden sm:inline text-xs">列表</span>
+                </button>
+              </div>
+
+              {/* Summary Collapsible Toggle Button (独立看板按钮) */}
               <button
-                onClick={() => onViewModeChange("list")}
+                onClick={onToggleSummary}
                 className={cn(
-                  "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
-                  viewMode === "list"
-                    ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                    : "text-muted-foreground hover:text-foreground"
+                  "pill-bar inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer border select-none shrink-0 active:scale-95",
+                  summaryCollapsed
+                    ? "text-muted-foreground hover:text-foreground border-border/40 hover:bg-muted/40"
+                    : "bg-primary/10 text-primary border-primary/30 font-semibold"
                 )}
-                title="列表视图"
+                title={summaryCollapsed ? "展开顶部监控看板" : "收起顶部监控看板"}
               >
-                <List className="size-3.5" />
-                <span className="hidden sm:inline text-xs">列表</span>
+                <BarChart2 className="size-3.5 shrink-0" />
+                <span className="text-xs">看板</span>
+                {summaryCollapsed ? (
+                  <ChevronDown className="size-3.5 shrink-0 text-muted-foreground transition-transform" />
+                ) : (
+                  <ChevronUp className="size-3.5 shrink-0 text-primary transition-transform" />
+                )}
               </button>
             </div>
-
-            {/* Summary Collapsible Toggle Button */}
-            <button
-              onClick={onToggleSummary}
-              className={cn(
-                "pill-bar inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer border select-none shrink-0 active:scale-95",
-                summaryCollapsed
-                  ? "text-muted-foreground hover:text-foreground border-border/40 hover:bg-muted/40"
-                  : "bg-primary/10 text-primary border-primary/30 font-semibold shadow-2xs"
-              )}
-              title={summaryCollapsed ? "展开顶部监控看板" : "收起顶部监控看板"}
-            >
-              <BarChart2 className="size-3.5 shrink-0" />
-              <span className="text-xs">看板</span>
-              {summaryCollapsed ? (
-                <ChevronDown className="size-3.5 shrink-0 text-muted-foreground transition-transform" />
-              ) : (
-                <ChevronUp className="size-3.5 shrink-0 text-primary transition-transform" />
-              )}
-            </button>
           </div>
-        </div>
 
         {/* Group Tabs (rendered neatly only when groups exist) */}
         {groups.length > 0 && (
@@ -1064,7 +1125,7 @@ function NodeList({
                   className={cn(
                     "flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium transition-all cursor-pointer",
                     active
-                      ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                      ? "bg-primary text-primary-foreground font-semibold"
                       : "glass-card text-muted-foreground hover:text-foreground border border-border/40"
                   )}
                 >
@@ -1083,6 +1144,49 @@ function NodeList({
           </div>
         )}
       </div>
+    ) : (
+      /* Collapsed Toolbar Row: Minimal left toggle + right summary */
+      <div className="flex items-center justify-between pt-1 select-none">
+        {/* Left: Collapsed Toolbar Expand Button */}
+        <button
+          onClick={onToggleToolbar}
+          className={cn(
+            "pill-bar inline-flex h-8 sm:h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium border select-none shrink-0 active:scale-95 transition-all cursor-pointer",
+            query || quickFilter !== "all" || group !== null
+              ? "bg-primary/15 border-primary text-primary font-semibold"
+              : "text-muted-foreground hover:text-foreground border-border/40 hover:bg-muted/40"
+          )}
+          title="展开搜索与筛选工具栏"
+        >
+          <SlidersHorizontal className="size-3.5 shrink-0" />
+          <span>展开筛选</span>
+          {(query || quickFilter !== "all" || group !== null) && (
+            <span className="size-1.5 rounded-full bg-primary animate-pulse-dot" />
+          )}
+          <ChevronDown className="size-3.5 shrink-0" />
+        </button>
+
+        {/* Right: Summary toggle button (看板独立出来) */}
+        <button
+          onClick={onToggleSummary}
+          className={cn(
+            "pill-bar inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-medium transition-all cursor-pointer border select-none shrink-0 active:scale-95",
+            summaryCollapsed
+              ? "text-muted-foreground hover:text-foreground border-border/40 hover:bg-muted/40"
+              : "bg-primary/10 text-primary border-primary/30 font-semibold"
+          )}
+          title={summaryCollapsed ? "展开顶部监控看板" : "收起顶部监控看板"}
+        >
+          <BarChart2 className="size-3.5 shrink-0" />
+          <span className="text-xs">看板</span>
+          {summaryCollapsed ? (
+            <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronUp className="size-3.5 shrink-0 text-primary" />
+          )}
+        </button>
+      </div>
+    )}
 
       {/* Node Content Area */}
       {searchFiltered.length === 0 ? (

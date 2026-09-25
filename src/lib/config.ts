@@ -20,6 +20,7 @@ export type ThemeConfig = {
   show_sparkline: boolean
   show_map: boolean
   show_summary: boolean
+  show_toolbar: boolean
   columns: number
   default_view: "grid" | "compact" | "list"
 }
@@ -91,6 +92,7 @@ export async function loadConfig(): Promise<ThemeConfig> {
     show_sparkline: loaded.show_sparkline !== false,
     show_map: Boolean(loaded.show_map),
     show_summary: Boolean(loaded.show_summary),
+    show_toolbar: loaded.show_toolbar !== false,
     columns: Number(loaded.columns) || 3,
     default_view: (loaded.default_view as "grid" | "compact" | "list") || "list",
   }

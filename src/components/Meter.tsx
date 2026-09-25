@@ -64,8 +64,8 @@ export function Meter({ icon, label, pct, foot, empty = "—" }: Props) {
       </div>
 
       {/* Subtext info below track */}
-      <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
-        <span className="tnum truncate font-normal">{foot}</span>
+      <div className="flex items-center justify-between px-1 text-[11px] text-foreground/75 font-normal">
+        <span className="tnum truncate">{foot}</span>
       </div>
     </div>
   )
