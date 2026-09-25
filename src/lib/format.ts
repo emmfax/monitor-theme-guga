@@ -82,7 +82,9 @@ export function daysUntil(date?: string | number | null): number | null {
   }
   const clean = String(date).trim()
   if (!clean) return null
-  let target = new Date(clean).getTime()
+  let target = /^\d{4}-\d{2}-\d{2}$/.test(clean)
+    ? new Date(`${clean}T00:00:00`).getTime()
+    : new Date(clean).getTime()
   if (Number.isNaN(target)) {
     target = new Date(`${clean}T00:00:00`).getTime()
   }

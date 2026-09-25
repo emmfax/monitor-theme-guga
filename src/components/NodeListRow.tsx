@@ -15,6 +15,19 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
   const latency = useNodeLatency(node.id, node.online)
   const avgMs = latency?.avgMs ?? null
   const days = node.expires_in !== undefined && node.expires_in !== null ? node.expires_in : daysUntil(node.expires_at)
+  const isFree = node.billing_cycle === "free" || (node.price !== undefined && node.price === 0)
+  const cycleText =
+    node.billing_cycle === "monthly"
+      ? "月"
+      : node.billing_cycle === "quarterly"
+      ? "季"
+      : node.billing_cycle === "yearly"
+      ? "年"
+      : node.billing_cycle === "semiannual"
+      ? "半年"
+      : CYCLES[node.billing_cycle] ?? "月"
+  const priceStr = node.price && node.price > 0 ? `${money(node.price, node.currency)}/${cycleText}` : null
+  const expiryShort = days === null ? "永久有效" : days < 0 ? "已过期" : days === 0 ? "今日到期" : `${days}天`
 
   return (
     <div
@@ -22,19 +35,49 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
       role="button"
       tabIndex={0}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}
-      className="glass-card group relative flex flex-col lg:flex-row lg:items-center justify-between gap-3 rounded-3xl border border-border/50 px-5 py-3.5 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm cursor-pointer select-none"
+      className="glass-card group relative flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 lg:gap-3 rounded-2xl sm:rounded-3xl border border-border/50 px-3.5 py-2.5 sm:px-5 sm:py-3.5 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm cursor-pointer select-none"
     >
-      {/* 1. Name & OS */}
-      <div className="flex items-center gap-3 min-w-[200px]">
-        <CountryFlag country={node.country} />
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-              {node.name}
-            </span>
+      {/* 1. Name & OS (On mobile: includes status & price on the right) */}
+      <div className="flex items-center justify-between lg:justify-start gap-3 lg:min-w-[200px]">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <CountryFlag country={node.country} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                {node.name}
+              </span>
+              {/* Desktop-only status pill */}
+              <span
+                className={cn(
+                  "hidden lg:inline-flex items-center gap-1 rounded-full px-2 py-0.2 text-[10px] font-medium shrink-0",
+                  node.online ? "bg-ok/12 text-ok" : "bg-destructive/12 text-destructive"
+                )}
+              >
+                <span className={cn("size-1.5 rounded-full", node.online ? "bg-ok animate-pulse-dot" : "bg-destructive")} />
+                {node.online ? "在线" : "离线"}
+              </span>
+            </div>
+            <div className="text-[10px] sm:text-[11px] text-muted-foreground truncate font-normal">
+              {node.os ? osName(node.os) : "等待上报"}
+              {node.arch ? ` · ${node.arch}` : ""}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile-only header right: Ping + Status + Price/Expiry */}
+        <div className="flex flex-col items-end gap-0.5 shrink-0 text-right lg:hidden">
+          <div className="flex items-center gap-1.5">
+            {node.online && avgMs !== null && (
+              <span className={cn(
+                "tnum text-[9px] font-medium px-1.5 py-0.2 rounded-full",
+                avgMs <= 0 ? "text-destructive bg-destructive/10" : avgMs <= 50 ? "text-ok bg-ok/10" : avgMs <= 120 ? "text-sky-500 bg-sky-500/10" : "text-amber-500 bg-amber-500/10"
+              )}>
+                {avgMs <= 0 ? "超时" : `${avgMs}ms`}
+              </span>
+            )}
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.2 text-[10px] font-medium shrink-0",
+                "inline-flex items-center gap-1 rounded-full px-1.5 py-0.2 text-[9px] font-medium",
                 node.online ? "bg-ok/12 text-ok" : "bg-destructive/12 text-destructive"
               )}
             >
@@ -42,22 +85,38 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
               {node.online ? "在线" : "离线"}
             </span>
           </div>
-          <div className="text-[11px] text-muted-foreground truncate font-normal">
-            {node.os ? osName(node.os) : "等待上报"}
-            {node.arch ? ` · ${node.arch}` : ""}
-          </div>
+
+          {(isFree || priceStr || expiryShort) && (
+            <div className="flex items-center gap-1 text-[9px] text-muted-foreground tnum font-normal">
+              {isFree ? (
+                <span className="font-semibold text-ok">免费</span>
+              ) : priceStr ? (
+                <span className="font-medium text-foreground/80">{priceStr}</span>
+              ) : null}
+              {(isFree || priceStr) && expiryShort && <span className="text-border/60">·</span>}
+              {expiryShort && (
+                <span
+                  className={cn(
+                    days !== null && days < 0 ? "text-destructive font-semibold" : days !== null && days <= 7 ? "text-warn font-semibold" : ""
+                  )}
+                >
+                  {expiryShort}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* 2. Resources: CPU, RAM, Disk, Traffic */}
-      <div className="grid grid-cols-4 gap-2.5 sm:gap-3 min-w-[320px] sm:min-w-[360px]">
+      <div className="grid grid-cols-4 gap-2 sm:gap-2.5 lg:gap-3 w-full lg:w-auto lg:min-w-[320px] sm:lg:min-w-[360px]">
         {/* CPU */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+        <div className="flex flex-col gap-0.5 sm:gap-1">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-medium text-muted-foreground">
             <span>CPU</span>
             <span className="tnum font-semibold text-foreground">{cpuPct !== null ? `${cpuPct.toFixed(0)}%` : "—"}</span>
           </div>
-          <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+          <div className="h-1 sm:h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-300",
@@ -69,12 +128,12 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         </div>
 
         {/* RAM */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+        <div className="flex flex-col gap-0.5 sm:gap-1">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-medium text-muted-foreground">
             <span>内存</span>
             <span className="tnum font-semibold text-foreground">{memPct !== null ? `${memPct.toFixed(0)}%` : "—"}</span>
           </div>
-          <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+          <div className="h-1 sm:h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-300",
@@ -86,12 +145,12 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         </div>
 
         {/* Disk */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+        <div className="flex flex-col gap-0.5 sm:gap-1">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-medium text-muted-foreground">
             <span>存储</span>
             <span className="tnum font-semibold text-foreground">{diskPct !== null ? `${diskPct.toFixed(0)}%` : "—"}</span>
           </div>
-          <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+          <div className="h-1 sm:h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-300",
@@ -103,14 +162,14 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         </div>
 
         {/* Traffic */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+        <div className="flex flex-col gap-0.5 sm:gap-1">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-medium text-muted-foreground">
             <span>流量</span>
             <span className="tnum font-semibold text-foreground">
               {trafficPct !== null ? `${trafficPct.toFixed(0)}%` : FOREVER}
             </span>
           </div>
-          <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+          <div className="h-1 sm:h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-300",
@@ -122,8 +181,8 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         </div>
       </div>
 
-      {/* 3. Live Speed */}
-      <div className="flex items-center gap-2 min-w-[150px] text-xs tnum">
+      {/* 3. Live Speed (Desktop) */}
+      <div className="hidden lg:flex items-center gap-2 min-w-[150px] text-xs tnum">
         <Activity className="size-3.5 text-ok shrink-0" />
         <div className="flex items-center gap-1.5 font-semibold">
           <span className="text-ok flex items-center">
@@ -137,8 +196,8 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         </div>
       </div>
 
-      {/* 3.5 Average Latency */}
-      <div className="flex items-center gap-1.5 min-w-[80px] text-xs select-none">
+      {/* 3.5 Average Latency (Desktop) */}
+      <div className="hidden lg:flex items-center gap-1.5 min-w-[80px] text-xs select-none">
         <span className="text-[11px] text-muted-foreground font-medium shrink-0">平延:</span>
         {node.online && avgMs !== null ? (
           <span className={cn(
@@ -152,9 +211,9 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         )}
       </div>
 
-      {/* 4. Traffic Usage & Expiry */}
-      <div className="flex items-center justify-between lg:justify-end gap-3.5 sm:gap-4 min-w-[200px] text-xs">
-        <div className="text-[11px] text-muted-foreground tnum font-normal flex flex-col items-start lg:items-end gap-0.5">
+      {/* 4. Traffic Usage & Expiry (Desktop) */}
+      <div className="hidden lg:flex items-center justify-end gap-3.5 sm:gap-4 min-w-[200px] text-xs">
+        <div className="text-[11px] text-muted-foreground tnum font-normal flex flex-col items-end gap-0.5">
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">月用量:</span>
             <span className="font-semibold text-foreground">{trafficUsage}</span>
@@ -177,7 +236,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
           ) : (
             <span className="text-[10px] font-medium text-muted-foreground">{days} 天后到期</span>
           )}
-          {node.billing_cycle === "free" || (node.price !== undefined && node.price === 0) ? (
+          {isFree ? (
             <span className="text-[10px] font-medium text-ok bg-ok/10 px-2 py-0.5 rounded-full border border-ok/20">
               免费
             </span>
@@ -186,6 +245,24 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
               续费: {money(node.price, node.currency)} / {CYCLES[node.billing_cycle] ?? node.billing_cycle ?? "月付"}
             </span>
           ) : null}
+        </div>
+      </div>
+
+      {/* Mobile-only Compact Bottom Row: Live Speed on left, Traffic usage on right */}
+      <div className="flex lg:hidden items-center justify-between pt-1 border-t border-border/25 text-[10px] text-muted-foreground select-none">
+        <div className="flex items-center gap-1.5 font-semibold tnum">
+          <span className="text-ok flex items-center gap-0.5">
+            <ArrowDown className="size-2.5" />
+            {m ? rate(m.net_rx) : "0 B/s"}
+          </span>
+          <span className="text-sky-400 flex items-center gap-0.5">
+            <ArrowUp className="size-2.5" />
+            {m ? rate(m.net_tx) : "0 B/s"}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 tnum">
+          <span className="text-foreground/80 font-medium">{trafficUsage}</span>
         </div>
       </div>
     </div>

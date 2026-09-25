@@ -723,14 +723,14 @@ function NodeList({
 
   const gridClass =
     colCount === 1
-      ? "grid-cols-1"
+      ? "cols-1"
       : colCount === 2
-      ? "grid-cols-1 sm:grid-cols-2"
+      ? "cols-2"
       : colCount === 4
-      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      ? "cols-4"
       : colCount === 5
-      ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 min-[1180px]:grid-cols-5"
-      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+      ? "cols-5"
+      : "cols-3"
 
   return (
     <div className="space-y-4">
@@ -768,20 +768,20 @@ function NodeList({
           </div>
 
           {/* 2. Controls: Filter Chips + Column Switcher + View Switcher */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-0.5">
             {/* Status Segmented Control */}
-            <div className="pill-bar inline-flex h-10 items-center rounded-full bg-muted/60 p-1 border border-border/40 shrink-0 select-none gap-1">
+            <div className="pill-bar inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5 sm:gap-1">
               <button
                 onClick={() => setQuickFilter("all")}
                 className={cn(
-                  "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                  "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
                   quickFilter === "all"
                     ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <span>全部</span>
-                <span className="tnum text-[11px] opacity-75">
+                <span className="tnum text-[10px] sm:text-[11px] opacity-75">
                   {query ? searchFiltered.length : groupFiltered.length}
                 </span>
               </button>
@@ -789,7 +789,7 @@ function NodeList({
               <button
                 onClick={() => setQuickFilter("online")}
                 className={cn(
-                  "flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                  "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
                   quickFilter === "online"
                     ? "bg-ok text-white shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -797,14 +797,14 @@ function NodeList({
               >
                 <span className="size-1.5 rounded-full bg-current" />
                 <span>在线</span>
-                <span className="tnum text-[11px] opacity-80">{onlineCount}</span>
+                <span className="tnum text-[10px] sm:text-[11px] opacity-80">{onlineCount}</span>
               </button>
 
               {highLoadCount > 0 && (
                 <button
                   onClick={() => setQuickFilter("high_load")}
                   className={cn(
-                    "flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                    "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
                     quickFilter === "high_load"
                       ? "bg-warn text-zinc-950 shadow-xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
@@ -812,7 +812,7 @@ function NodeList({
                 >
                   <Flame className="size-3.5" />
                   <span className="hidden sm:inline">高负载</span>
-                  <span className="tnum text-[11px]">({highLoadCount})</span>
+                  <span className="tnum text-[10px] sm:text-[11px]">({highLoadCount})</span>
                 </button>
               )}
 
@@ -820,7 +820,7 @@ function NodeList({
                 <button
                   onClick={() => setQuickFilter("expiring")}
                   className={cn(
-                    "flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
+                    "flex h-7.5 sm:h-8 items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 text-[11px] sm:text-xs font-medium transition-all duration-150 active:scale-95 cursor-pointer",
                     quickFilter === "expiring"
                       ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
@@ -828,20 +828,20 @@ function NodeList({
                 >
                   <Hourglass className="size-3.5" />
                   <span className="hidden sm:inline">快到期</span>
-                  <span className="tnum text-[11px]">({expiringCount})</span>
+                  <span className="tnum text-[10px] sm:text-[11px]">({expiringCount})</span>
                 </button>
               )}
             </div>
 
             {/* Column Switcher (Grid or Compact, Tablet/Desktop only) */}
             {viewMode !== "list" && (
-              <div className="pill-bar hidden md:inline-flex h-10 items-center rounded-full bg-muted/60 p-1 border border-border/40 shrink-0 select-none gap-0.5">
+              <div className="pill-bar hidden md:inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5">
                 {[2, 3, 4, 5].map((c) => (
                   <button
                     key={c}
                     onClick={() => onColCountChange(c)}
                     className={cn(
-                      "flex h-8 min-w-[32px] items-center justify-center rounded-full px-2 text-xs font-medium transition-all cursor-pointer",
+                      "flex h-7.5 sm:h-8 min-w-[32px] items-center justify-center rounded-full px-2 text-xs font-medium transition-all cursor-pointer",
                       colCount === c
                         ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                         : "text-muted-foreground hover:text-foreground"
@@ -855,11 +855,11 @@ function NodeList({
             )}
 
             {/* View Mode Switcher */}
-            <div className="pill-bar inline-flex h-10 items-center rounded-full bg-muted/60 p-1 border border-border/40 shrink-0 select-none gap-0.5">
+            <div className="pill-bar inline-flex h-9 sm:h-10 items-center rounded-full bg-muted/60 p-0.5 sm:p-1 border border-border/40 shrink-0 select-none gap-0.5">
               <button
                 onClick={() => onViewModeChange("grid")}
                 className={cn(
-                  "flex h-8 items-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer",
+                  "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
                   viewMode === "grid"
                     ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -873,7 +873,7 @@ function NodeList({
               <button
                 onClick={() => onViewModeChange("compact")}
                 className={cn(
-                  "flex h-8 items-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer",
+                  "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
                   viewMode === "compact"
                     ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -887,7 +887,7 @@ function NodeList({
               <button
                 onClick={() => onViewModeChange("list")}
                 className={cn(
-                  "flex h-8 items-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer",
+                  "flex h-7.5 sm:h-8 items-center justify-center gap-1.5 rounded-full px-2 sm:px-3 text-xs font-medium transition-all cursor-pointer",
                   viewMode === "list"
                     ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -903,7 +903,7 @@ function NodeList({
             <button
               onClick={onToggleSummary}
               className={cn(
-                "pill-bar inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-all cursor-pointer border border-border/40 select-none shrink-0 active:scale-95",
+                "pill-bar inline-flex h-9 sm:h-10 items-center justify-center gap-1 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all cursor-pointer border border-border/40 select-none shrink-0 active:scale-95",
                 summaryCollapsed
                   ? "text-muted-foreground hover:text-foreground"
                   : "text-primary font-semibold"
@@ -912,7 +912,9 @@ function NodeList({
             >
               <BarChart2 className="size-3.5" />
               <span className="hidden sm:inline text-xs">看板</span>
-              {summaryCollapsed ? <ChevronDown className="size-3" /> : <ChevronUp className="size-3" />}
+              <span className="hidden sm:inline">
+                {summaryCollapsed ? <ChevronDown className="size-3" /> : <ChevronUp className="size-3" />}
+              </span>
             </button>
           </div>
         </div>
