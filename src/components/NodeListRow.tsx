@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, Activity } from "lucide-react"
 import { CountryFlag } from "@/components/CountryFlag"
 import { type Node, useNodeLatency } from "@/lib/api"
-import { CYCLES, FOREVER, bytes, daysUntil, money, osName, pair, percent, rate } from "@/lib/format"
+import { CYCLES, FOREVER, bytes, getNodeExpiryDays, money, osName, pair, percent, rate } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }) {
@@ -14,7 +14,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
   const trafficUsage = node.traffic_limit > 0 ? pair(monthUsed, node.traffic_limit) : `${bytes(monthUsed)} / ${FOREVER}`
   const latency = useNodeLatency(node.id, node.online)
   const avgMs = latency?.avgMs ?? null
-  const days = node.expires_in !== undefined && node.expires_in !== null ? node.expires_in : daysUntil(node.expires_at)
+  const days = getNodeExpiryDays(node)
   const isFree = node.billing_cycle === "free" || (node.price !== undefined && node.price === 0)
   const cycleText =
     node.billing_cycle === "monthly"

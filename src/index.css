@@ -325,6 +325,7 @@ html.dark[data-card-style="transparent"] .pill-bar {
 html[data-monochrome="true"] {
   --color-ok: var(--foreground) !important;
   --ok: var(--foreground) !important;
+  --wave-tx: var(--muted-foreground) !important;
 }
 
 html[data-monochrome="true"] .text-ok,

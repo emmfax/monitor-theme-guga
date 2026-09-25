@@ -2,7 +2,7 @@
   "name": "Guga",
   "short": "guga",
   "description": "极简清新风格服务器监控主题，支持毛玻璃、自定义壁纸与多端自适应",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "author": "emmfax",
   "url": "https://github.com/emmfax/monitor-theme-guga",
   "config": [
@@ -35,7 +35,7 @@
     },
     {
       "key": "monochrome",
-      "type": "switch",
+      "type": "boolean",
       "label": "纯黑白极简字色",
       "default": false,
       "help": "开启后去除所有速率、延迟与状态的彩色，转为纯黑白灰度，极致精简"

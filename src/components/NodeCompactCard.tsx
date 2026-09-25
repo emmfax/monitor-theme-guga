@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp } from "lucide-react"
 import { CountryFlag } from "@/components/CountryFlag"
 import { type Node, useNodeLatency } from "@/lib/api"
-import { bytes, CYCLES, daysUntil, FOREVER, money, osName, pair, percent, rate, uptime } from "@/lib/format"
+import { bytes, CYCLES, getNodeExpiryDays, FOREVER, money, osName, pair, percent, rate, uptime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => void }) {
@@ -14,7 +14,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
   const monthUsed = node.month_used !== undefined ? node.month_used : (node.month_rx ?? 0) + (node.month_tx ?? 0)
   const trafficPct = node.traffic_limit > 0 ? percent(monthUsed, node.traffic_limit) : null
   const trafficFoot = node.traffic_limit > 0 ? pair(monthUsed, node.traffic_limit) : `${bytes(monthUsed)} / ${FOREVER}`
-  const days = node.expires_in !== undefined && node.expires_in !== null ? node.expires_in : daysUntil(node.expires_at)
+  const days = getNodeExpiryDays(node)
   const isFree = node.billing_cycle === "free" || (node.price !== undefined && node.price === 0)
   const cycleText =
     node.billing_cycle === "monthly"

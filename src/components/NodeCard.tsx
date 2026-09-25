@@ -18,7 +18,7 @@ import {
 import { Meter } from "@/components/Meter"
 import { CountryFlag } from "@/components/CountryFlag"
 import { useNodeLatency, type Node } from "@/lib/api"
-import { bytes, CYCLES, daysUntil, FOREVER, money, osName, pair, percent, rate, uptime } from "@/lib/format"
+import { bytes, CYCLES, getNodeExpiryDays, FOREVER, money, osName, pair, percent, rate, uptime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 const DISTROS: [string, SimpleIcon][] = [
@@ -105,10 +105,7 @@ function monthUsage(node: Node): number {
 }
 
 function ExpiryPill({ node }: { node: Node }) {
-  const days =
-    node.expires_in !== undefined && node.expires_in !== null
-      ? node.expires_in
-      : daysUntil(node.expires_at)
+  const days = getNodeExpiryDays(node)
 
   if (days === null) {
     return (

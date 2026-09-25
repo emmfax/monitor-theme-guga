@@ -36,6 +36,7 @@ type Field = {
 function fits(field: Field, value: unknown): boolean {
   switch (field.type) {
     case "boolean":
+    case "switch":
       return typeof value === "boolean"
     case "number":
       return (
@@ -79,6 +80,7 @@ export async function loadConfig(): Promise<ThemeConfig> {
   return {
     palette: (loaded.palette as Palette) || "mono",
     theme_mode: (loaded.theme_mode as ThemeMode) || "system",
+    monochrome: Boolean(loaded.monochrome),
     card_style: (loaded.card_style as CardStyle) || "solid",
     card_blur: typeof loaded.card_blur === "number" ? loaded.card_blur : 40,
     bg_blur: typeof loaded.bg_blur === "number" ? loaded.bg_blur : 0,

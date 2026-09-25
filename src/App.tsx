@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/Skeleton"
 import { SettingsModal, type ThemeMode, type CardStyle, type ViewMode } from "@/components/SettingsModal"
 import { api, groupsOf, useNodes, type Node } from "@/lib/api"
 import { loadConfig, type Palette, type ThemeConfig } from "@/lib/config"
+import { isNodeExpiring } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 type Me = { authed: boolean; github: boolean; site_name: string; public_page: boolean }
@@ -743,10 +744,7 @@ function NodeList({
       case "high_load":
         return groupFiltered.filter((n) => (n.metrics?.cpu ?? 0) >= 40)
       case "expiring":
-        return groupFiltered.filter((n) => {
-          const d = n.expires_in !== undefined ? n.expires_in : null
-          return d !== null && d <= 60
-        })
+        return groupFiltered.filter((n) => isNodeExpiring(n))
       default:
         return groupFiltered
     }
@@ -769,10 +767,7 @@ function NodeList({
 
   const onlineCount = nodes.filter((n) => n.online).length
   const highLoadCount = nodes.filter((n) => (n.metrics?.cpu ?? 0) >= 40).length
-  const expiringCount = nodes.filter((n) => {
-    const d = n.expires_in !== undefined ? n.expires_in : null
-    return d !== null && d <= 60
-  }).length
+  const expiringCount = nodes.filter((n) => isNodeExpiring(n)).length
 
   const tabs = [
     [null, "全部", nodes.length] as const,

@@ -96,6 +96,37 @@ export function daysUntil(date?: string | number | null): number | null {
 }
 
 /**
+ * Resolves remaining days until expiry for a node.
+ * 1. If expires_at is empty string, null, undefined, or "0", it is permanent (null).
+ * 2. If expires_at has a valid date, daysUntil(expires_at) is the absolute ground truth.
+ * 3. Fallback to expires_in only if expires_at is completely absent and expires_in is a valid number.
+ */
+export function getNodeExpiryDays(node?: { expires_at?: string | number | null; expires_in?: number | null } | null): number | null {
+  if (!node) return null
+  const expAt = node.expires_at
+  if (expAt === null || expAt === "" || expAt === "0" || expAt === "永久") {
+    return null
+  }
+  if (expAt !== undefined && String(expAt).trim() !== "") {
+    const d = daysUntil(expAt)
+    if (d !== null) return d
+  }
+  if (typeof node.expires_in === "number" && Number.isFinite(node.expires_in)) {
+    return node.expires_in
+  }
+  return null
+}
+
+/**
+ * Checks whether a node is expiring soon (<= 15 days remaining, or already expired).
+ * Since VPS monthly billing is ~30 days, renewed nodes have ~30 days, so <= 15 days is true expiring warning.
+ */
+export function isNodeExpiring(node?: { expires_at?: string | number | null; expires_in?: number | null } | null): boolean {
+  const d = getNodeExpiryDays(node)
+  return d !== null && d <= 15
+}
+
+/**
  * No expiry and no traffic cap are both rendered as the absence of a ceiling.
  * U+221E rather than the emoji, which arrives as a coloured tile from whatever
  * font the visitor has; this inherits the text colour and size.

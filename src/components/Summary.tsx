@@ -9,7 +9,6 @@ import {
   Zap,
   Clock,
   RefreshCw,
-  ChevronUp,
 } from "lucide-react"
 
 import { speedHistory, type Node } from "@/lib/api"
@@ -157,7 +156,7 @@ function ExpressiveWave({ series }: { series: { rx: number; tx: number }[] }) {
         </defs>
         <path d={`${rxPath} L 100 28 L 0 28 Z`} fill="url(#rx-fill)" />
         <path d={rxPath} fill="none" stroke="var(--color-ok)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-        <path d={txPath} fill="none" stroke="#38bdf8" strokeWidth="1.25" strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
+        <path d={txPath} fill="none" stroke="var(--wave-tx, #38bdf8)" strokeWidth="1.25" strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
       </svg>
     </div>
   )
@@ -279,72 +278,51 @@ export function Summary({
 
   return (
     <div className="space-y-2.5">
-      {/* Top control bar with collapse toggle */}
+      {/* Top control bar */}
       <div className="flex items-center justify-between px-1 select-none">
         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Activity className="size-3.5 text-primary" />
-          <span>全网概览</span>
+          <span>概览</span>
           {group && <span className="text-foreground/80">({group})</span>}
         </div>
-        {onToggleCollapse && (
-          <button
-            onClick={onToggleCollapse}
-            className="flex items-center gap-1 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground px-2.5 py-0.5 text-[11px] font-medium transition-colors border border-border/40 cursor-pointer active:scale-95"
-            title="收起全网概览看板"
-          >
-            <span>收起看板</span>
-            <ChevronUp className="size-3" />
-          </button>
-        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
-        {/* 1. Fleet Cluster Tile */}
+        {/* 1. Fleet Status Tile */}
         <QuickSettingsTile
           icon={Server}
-          label="节点集群"
-        badge={
-          offlineCount === 0 ? (
-            <span className="flex items-center gap-1.5 rounded-lg bg-ok/12 px-2 py-0.5 text-[11px] font-semibold text-ok border border-ok/20 shadow-2xs">
-              <span className="size-1.5 rounded-full bg-ok animate-pulse-dot" />
-              全员正常
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5 rounded-lg bg-destructive/12 px-2 py-0.5 text-[11px] font-semibold text-destructive border border-destructive/20">
-              {offlineCount} 台待恢复
-            </span>
-          )
-        }
-      >
-        <div className="flex items-baseline justify-between gap-2">
-          {monthlyCostText ? (
-            <div>
-              <span className="text-[10px] text-muted-foreground font-medium block">月度成本</span>
-              <span className="tnum text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-                {monthlyCostText}
+          label="节点状态"
+          badge={
+            offlineCount === 0 ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-ok/10 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-ok border border-ok/20">
+                <span className="size-1.5 rounded-full bg-ok animate-pulse-dot" />
+                全员在线
               </span>
-            </div>
-          ) : (
-            <div className="tnum text-2xl font-semibold tracking-tight text-foreground">
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-destructive border border-destructive/20">
+                {offlineCount} 台待恢复
+              </span>
+            )
+          }
+        >
+          <div className="tnum flex items-baseline gap-1.5 my-1">
+            <span className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               {online.length}
-              <span className="text-sm font-normal text-muted-foreground ml-1.5">/ {nodes.length} 在线</span>
-            </div>
-          )}
-          {monthlyCostText && (
-            <div className="text-right">
-              <div className="tnum text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
-                {online.length}
-                <span className="text-sm font-normal text-muted-foreground ml-1.5">/ {nodes.length} 在线</span>
-              </div>
-            </div>
-          )}
-        </div>
-        {group && (
-          <div className="mt-1 text-xs text-muted-foreground truncate font-normal">
-            分组: {group}
+            </span>
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+              / {nodes.length} 台在线
+            </span>
           </div>
-        )}
-      </QuickSettingsTile>
+
+          <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground font-normal">
+              {monthlyCostText ? "预估月成本" : "在线率"}
+            </span>
+            <span className="tnum font-semibold text-foreground">
+              {monthlyCostText || (nodes.length > 0 ? `${((online.length / nodes.length) * 100).toFixed(0)}%` : "100%")}
+            </span>
+          </div>
+        </QuickSettingsTile>
 
       {/* 2. Dynamic Switchable Peak Tile */}
       <QuickSettingsTile
@@ -457,17 +435,7 @@ export function Summary({
       {/* 4. Real-time Bandwidth & Wave Tile */}
       <QuickSettingsTile
         icon={Gauge}
-        label="全网瞬时速率"
-        badge={
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
-            <span className="flex items-center gap-1">
-              <span className="size-1.5 rounded-full bg-ok" /> 下行
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="size-1.5 rounded-full bg-sky-400" /> 上行
-            </span>
-          </div>
-        }
+        label="实时速率"
       >
         <div className="tnum flex items-baseline justify-between mb-1.5">
           <span className="text-sm font-semibold text-foreground">
