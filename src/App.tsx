@@ -245,18 +245,18 @@ export default function App() {
       root.style.setProperty("--glass-bg-opacity", "1")
       root.style.setProperty("--pill-bg-opacity", "1")
     } else if (cardStyle === "transparent") {
-      const px = Math.round(10 + (bgMask / 100) * 16)
-      const op = (0.55 + (bgMask / 100) * 0.25).toFixed(2)
+      const px = Math.round(14 + (bgMask / 100) * 20)
+      const op = (0.50 + (bgMask / 100) * 0.25).toFixed(2)
       root.style.setProperty("--glass-blur", `${px}px`)
       root.style.setProperty("--glass-bg-opacity", op)
-      root.style.setProperty("--pill-bg-opacity", (0.50 + (bgMask / 100) * 0.25).toFixed(2))
+      root.style.setProperty("--pill-bg-opacity", (0.45 + (bgMask / 100) * 0.25).toFixed(2))
     } else {
       // "blur" mode: frosted glass with 0-100 stepless control
-      const px = Math.round((bgMask / 100) * 36)
-      const op = bgMask === 0 ? "1" : (0.65 + (bgMask / 100) * 0.30).toFixed(2)
+      const px = Math.round(14 + (bgMask / 100) * 24)
+      const op = bgMask === 0 ? "0.95" : (0.68 + (bgMask / 100) * 0.25).toFixed(2)
       root.style.setProperty("--glass-blur", `${px}px`)
       root.style.setProperty("--glass-bg-opacity", op)
-      root.style.setProperty("--pill-bg-opacity", (0.50 + (bgMask / 100) * 0.35).toFixed(2))
+      root.style.setProperty("--pill-bg-opacity", (0.55 + (bgMask / 100) * 0.30).toFixed(2))
     }
   }, [cardStyle, bgMask])
 
@@ -739,6 +739,7 @@ function NodeList({
         nodes={groupFiltered}
         group={current}
         collapsed={summaryCollapsed}
+        onToggleCollapse={onToggleSummary}
         siteName={siteName}
       />
 
@@ -903,18 +904,20 @@ function NodeList({
             <button
               onClick={onToggleSummary}
               className={cn(
-                "pill-bar inline-flex h-9 sm:h-10 items-center justify-center gap-1 rounded-full px-2.5 sm:px-3 text-[11px] sm:text-xs font-medium transition-all cursor-pointer border border-border/40 select-none shrink-0 active:scale-95",
+                "pill-bar inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full px-2.5 sm:px-3 text-xs font-medium transition-all cursor-pointer border select-none shrink-0 active:scale-95",
                 summaryCollapsed
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-primary font-semibold"
+                  ? "text-muted-foreground hover:text-foreground border-border/40 hover:bg-muted/40"
+                  : "bg-primary/10 text-primary border-primary/30 font-semibold shadow-2xs"
               )}
               title={summaryCollapsed ? "展开顶部监控看板" : "收起顶部监控看板"}
             >
-              <BarChart2 className="size-3.5" />
-              <span className="hidden sm:inline text-xs">看板</span>
-              <span className="hidden sm:inline">
-                {summaryCollapsed ? <ChevronDown className="size-3" /> : <ChevronUp className="size-3" />}
-              </span>
+              <BarChart2 className="size-3.5 shrink-0" />
+              <span className="text-xs">看板</span>
+              {summaryCollapsed ? (
+                <ChevronDown className="size-3.5 shrink-0 text-muted-foreground transition-transform" />
+              ) : (
+                <ChevronUp className="size-3.5 shrink-0 text-primary transition-transform" />
+              )}
             </button>
           </div>
         </div>

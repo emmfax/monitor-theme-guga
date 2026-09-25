@@ -9,6 +9,8 @@ import {
   Zap,
   Clock,
   RefreshCw,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 
 import { speedHistory, type Node } from "@/lib/api"
@@ -166,11 +168,13 @@ export function Summary({
   nodes,
   group,
   collapsed = false,
+  onToggleCollapse,
   siteName,
 }: {
   nodes: Node[]
   group: string | null
   collapsed?: boolean
+  onToggleCollapse?: () => void
   siteName?: string
 }) {
   const [peakMode, setPeakMode] = useState<PeakMode>("uptime")
@@ -190,7 +194,14 @@ export function Summary({
 
   if (collapsed) {
     return (
-      <div className="glass-card flex items-center justify-between rounded-2xl sm:rounded-full border border-border/50 px-3.5 sm:px-4.5 py-2 text-xs shadow-xs select-none">
+      <div
+        onClick={onToggleCollapse}
+        className={cn(
+          "glass-card flex items-center justify-between rounded-2xl sm:rounded-full border border-border/50 px-3.5 sm:px-4.5 py-2 text-xs shadow-xs select-none transition-all duration-200",
+          onToggleCollapse && "cursor-pointer hover:border-primary/40 active:scale-[0.99] group"
+        )}
+        title={onToggleCollapse ? "点击展开全网监控概览看板" : undefined}
+      >
         <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none py-0.5 min-w-0">
           <span className="flex items-center gap-1.5 font-medium text-foreground shrink-0">
             <span className="size-2 rounded-full bg-ok animate-pulse-dot" />
@@ -218,14 +229,20 @@ export function Summary({
           </span>
         </div>
 
-        {/* Right: Site Name */}
-        {siteName && (
-          <div className="flex items-center pl-2.5 sm:pl-3 border-l border-border/40 shrink-0 ml-2">
+        {/* Right: Site Name & Prominent Expand Indicator */}
+        <div className="flex items-center gap-1.5 sm:gap-2 pl-2.5 sm:pl-3 border-l border-border/40 shrink-0 ml-2">
+          {siteName && (
             <span className="text-xs font-semibold text-foreground tracking-tight">
               {siteName}
             </span>
-          </div>
-        )}
+          )}
+          {onToggleCollapse && (
+            <div className="flex items-center gap-0.5 rounded-full bg-muted/60 group-hover:bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-muted-foreground group-hover:text-primary transition-colors">
+              <span>展开</span>
+              <ChevronDown className="size-3 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-y-0.5" />
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -269,6 +286,24 @@ export function Summary({
 
   return (
     <div className="space-y-2.5">
+      {/* Top control bar with collapse toggle */}
+      <div className="flex items-center justify-between px-1 select-none">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Activity className="size-3.5 text-primary" />
+          <span>全网概览</span>
+          {group && <span className="text-foreground/80">({group})</span>}
+        </div>
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="flex items-center gap-1 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground px-2.5 py-0.5 text-[11px] font-medium transition-colors border border-border/40 cursor-pointer active:scale-95"
+            title="收起全网概览看板"
+          >
+            <span>收起看板</span>
+            <ChevronUp className="size-3" />
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
         {/* 1. Fleet Cluster Tile */}
