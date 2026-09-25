@@ -1065,19 +1065,19 @@ function NodeList({
           未检索到匹配的巡检节点，请尝试清空筛选条件。
         </div>
       ) : viewMode === "list" ? (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-1.5 sm:gap-2.5">
           {searchFiltered.map((n) => (
             <NodeListRow key={n.id} node={n} onOpen={() => onOpen(n.id)} />
           ))}
         </div>
       ) : viewMode === "compact" ? (
-        <div className={cn("grid gap-3 items-stretch", gridClass)}>
+        <div className={cn("grid gap-2 sm:gap-3 items-stretch", gridClass)}>
           {searchFiltered.map((n) => (
             <NodeCompactCard key={n.id} node={n} onOpen={() => onOpen(n.id)} />
           ))}
         </div>
       ) : (
-        <div className={cn("grid gap-4 items-stretch", gridClass)}>
+        <div className={cn("grid gap-3 sm:gap-4 items-stretch", gridClass)}>
           {searchFiltered.map((n) => (
             <NodeCard key={n.id} node={n} onOpen={() => onOpen(n.id)} showSparkline={showSparkline} />
           ))}

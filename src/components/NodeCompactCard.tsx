@@ -35,14 +35,14 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
       role="button"
       tabIndex={0}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}
-      className="glass-card group relative flex flex-col justify-between rounded-3xl border border-border/50 p-4 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm cursor-pointer select-none"
+      className="glass-card group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-border/50 p-3 sm:p-4 shadow-2xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm cursor-pointer select-none"
     >
       {/* 1. Header: Flag, Name, OS/Arch, Status, Price & Expiry */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0 pt-0.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pt-0.5">
           <CountryFlag country={node.country} />
           <div className="min-w-0">
-            <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors block">
+            <span className="truncate text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors block">
               {node.name}
             </span>
             <div className="text-[10px] text-muted-foreground truncate font-normal">
@@ -52,10 +52,10 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 shrink-0 text-right">
+        <div className="flex flex-col items-end gap-0.5 sm:gap-1 shrink-0 text-right">
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium select-none",
+              "inline-flex items-center gap-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium select-none",
               node.online ? "bg-ok/12 text-ok" : "bg-destructive/12 text-destructive"
             )}
           >
@@ -64,7 +64,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
           </span>
 
           {(isFree || priceStr || expiryStr) && (
-            <div className="flex items-center gap-1 text-[10px] text-muted-foreground tnum font-normal select-none">
+            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-muted-foreground tnum font-normal select-none">
               {isFree ? (
                 <span className="font-normal text-muted-foreground/80">免费</span>
               ) : priceStr ? (
@@ -88,7 +88,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
       </div>
 
       {/* 2. 4 Compact Progress Bars */}
-      <div className="my-2.5 grid grid-cols-4 gap-2">
+      <div className="my-1.5 sm:my-2.5 grid grid-cols-4 gap-1.5 sm:gap-2">
         {/* CPU */}
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between text-[9px] font-medium text-muted-foreground">
@@ -159,8 +159,8 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
       </div>
 
       {/* 3. Footer: Rate, Latency & Traffic */}
-      <div className="pt-2 border-t border-border/25 space-y-1 text-[10px] text-muted-foreground select-none">
-        {/* Top: Live Speed & Latency */}
+      <div className="pt-1.5 sm:pt-2 border-t border-border/25 space-y-1 text-[10px] text-muted-foreground select-none">
+        {/* Top: Live Speed & Latency (plus mobile monthly traffic) */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 font-semibold tnum">
             <span className="text-ok flex items-center">
@@ -172,23 +172,29 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
               {m ? rate(m.net_tx) : "0 B/s"}
             </span>
           </div>
-          {node.online && avgMs !== null && (
-            <span className="flex items-center gap-1 text-[10px]">
-              <span className="text-muted-foreground font-medium">平延:</span>
-              <span
-                className={cn(
-                  "tnum font-semibold",
-                  avgMs <= 0 ? "text-destructive" : avgMs <= 50 ? "text-ok" : avgMs <= 120 ? "text-sky-500" : "text-amber-500"
-                )}
-              >
-                {avgMs <= 0 ? "超时" : `${avgMs}ms`}
+
+          <div className="flex items-center gap-2">
+            {node.online && avgMs !== null && (
+              <span className="flex items-center gap-1 text-[10px]">
+                <span className="text-muted-foreground font-medium">平延:</span>
+                <span
+                  className={cn(
+                    "tnum font-semibold",
+                    avgMs <= 0 ? "text-destructive" : avgMs <= 50 ? "text-ok" : avgMs <= 120 ? "text-sky-500" : "text-amber-500"
+                  )}
+                >
+                  {avgMs <= 0 ? "超时" : `${avgMs}ms`}
+                </span>
               </span>
-            </span>
-          )}
+            )}
+            <div className="tnum font-normal truncate text-right sm:hidden">
+              <span className="font-semibold text-foreground">{trafficFoot}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Bottom: Month Usage & Cumulative Traffic */}
-        <div className="flex items-center justify-between text-muted-foreground/85 text-[10px] pt-0.5">
+        {/* Bottom (Desktop / Tablet only): Month Usage & Cumulative Traffic */}
+        <div className="hidden sm:flex items-center justify-between text-muted-foreground/85 text-[10px] pt-0.5">
           <div className="tnum font-normal truncate pr-1">
             <span>月用量: </span>
             <span className="font-semibold text-foreground">{trafficFoot}</span>
