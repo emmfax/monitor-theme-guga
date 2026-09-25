@@ -11,6 +11,8 @@ export type ThemeConfig = {
   theme_mode: ThemeMode
   monochrome?: boolean
   card_style: CardStyle
+  card_blur?: number
+  bg_blur?: number
   bg_mask: number
   bg_preset: BgPreset
   bg_url: string
@@ -78,6 +80,8 @@ export async function loadConfig(): Promise<ThemeConfig> {
     palette: (loaded.palette as Palette) || "mono",
     theme_mode: (loaded.theme_mode as ThemeMode) || "system",
     card_style: (loaded.card_style as CardStyle) || "solid",
+    card_blur: typeof loaded.card_blur === "number" ? loaded.card_blur : 40,
+    bg_blur: typeof loaded.bg_blur === "number" ? loaded.bg_blur : 0,
     bg_mask: typeof loaded.bg_mask === "number" ? loaded.bg_mask : 35,
     bg_preset: bgPreset,
     bg_url: effectiveBgUrl,

@@ -274,16 +274,20 @@ export default function App() {
       root.style.setProperty("--glass-bg-opacity", "1")
       root.style.setProperty("--pill-bg-opacity", "1")
     } else if (cardStyle === "transparent") {
-      const px = Math.round((cardBlur / 100) * 32)
+      const px = Math.round((cardBlur / 100) * 28)
+      const op = (0.20 + (cardBlur / 100) * 0.35).toFixed(2)
+      const pillOp = (0.20 + (cardBlur / 100) * 0.35).toFixed(2)
       root.style.setProperty("--glass-blur", `${px}px`)
-      root.style.setProperty("--glass-bg-opacity", "0.60")
-      root.style.setProperty("--pill-bg-opacity", "0.55")
+      root.style.setProperty("--glass-bg-opacity", op)
+      root.style.setProperty("--pill-bg-opacity", pillOp)
     } else {
-      // "blur" mode: frosted glass with cardBlur control
+      // "blur" mode: frosted glass with dynamic cardBlur & opacity coupling
       const px = Math.round((cardBlur / 100) * 36)
+      const op = (0.35 + (cardBlur / 100) * 0.45).toFixed(2)
+      const pillOp = (0.35 + (cardBlur / 100) * 0.40).toFixed(2)
       root.style.setProperty("--glass-blur", `${px}px`)
-      root.style.setProperty("--glass-bg-opacity", "0.85")
-      root.style.setProperty("--pill-bg-opacity", "0.72")
+      root.style.setProperty("--glass-bg-opacity", op)
+      root.style.setProperty("--pill-bg-opacity", pillOp)
     }
   }, [cardStyle, cardBlur, monochrome])
 
@@ -308,6 +312,12 @@ export default function App() {
       if (localStorage.getItem("theme_bg_mask") === null && cfg.bg_mask !== undefined) {
         updateBgMask(cfg.bg_mask, false)
       }
+      if (localStorage.getItem("theme_bg_blur") === null && cfg.bg_blur !== undefined) {
+        updateBgBlur(cfg.bg_blur, false)
+      }
+      if (localStorage.getItem("theme_card_blur_amount") === null && cfg.card_blur !== undefined) {
+        updateCardBlur(cfg.card_blur, false)
+      }
       if (localStorage.getItem("theme_view_mode") === null && cfg.default_view) {
         updateViewMode(cfg.default_view, false)
       }
@@ -328,6 +338,8 @@ export default function App() {
     updateCardStyle,
     updateBgUrl,
     updateBgMask,
+    updateBgBlur,
+    updateCardBlur,
     updateViewMode,
     updateColCount,
     updateSummaryCollapsed,
@@ -583,7 +595,7 @@ export default function App() {
               setFabOpen(false)
               setMapModalOpen(true)
             }}
-            className="flex items-center gap-2.5 rounded-full bg-card border border-border/60 py-2 px-3.5 shadow-lg hover:border-primary/50 hover:scale-102 transition-transform duration-150 cursor-pointer active:scale-95 text-foreground group"
+            className="pill-bar flex items-center gap-2.5 rounded-full border border-border/50 py-2 px-3.5 shadow-lg hover:border-primary/50 hover:scale-102 transition-transform duration-150 cursor-pointer active:scale-95 text-foreground group"
             title="查看节点分布世界地图"
           >
             <span className="text-xs font-medium">节点地图</span>
@@ -601,7 +613,7 @@ export default function App() {
           <a
             href="/admin/"
             onClick={() => setFabOpen(false)}
-            className="flex items-center gap-2.5 rounded-full bg-card border border-border/60 py-2 px-3.5 shadow-lg hover:border-primary/50 hover:scale-102 transition-transform duration-150 active:scale-95 text-foreground group"
+            className="pill-bar flex items-center gap-2.5 rounded-full border border-border/50 py-2 px-3.5 shadow-lg hover:border-primary/50 hover:scale-102 transition-transform duration-150 active:scale-95 text-foreground group"
             title={me.authed ? "进入控制面板" : "登录"}
           >
             <span className="text-xs font-medium">{me.authed ? "控制面板" : "登录"}</span>
@@ -616,7 +628,7 @@ export default function App() {
               setFabOpen(false)
               setSettingsOpen(true)
             }}
-            className="flex items-center gap-2.5 rounded-full bg-card border border-border/60 py-2 px-3.5 shadow-lg hover:border-primary/50 hover:scale-102 transition-transform duration-150 cursor-pointer active:scale-95 text-foreground group"
+            className="pill-bar flex items-center gap-2.5 rounded-full border border-border/50 py-2 px-3.5 shadow-lg hover:border-primary/50 hover:scale-102 transition-transform duration-150 cursor-pointer active:scale-95 text-foreground group"
             title="个性化与偏好设置"
           >
             <span className="text-xs font-medium">偏好设置</span>
@@ -630,10 +642,10 @@ export default function App() {
         <button
           onClick={() => setFabOpen((v) => !v)}
           className={cn(
-            "relative z-40 flex size-12 items-center justify-center rounded-full border shadow-lg transition-[transform,background-color,border-color] duration-200 ease-out cursor-pointer active:scale-95 pointer-events-auto bg-card",
+            "relative z-40 flex size-12 items-center justify-center rounded-full border shadow-lg transition-[transform,background-color,border-color] duration-200 ease-out cursor-pointer active:scale-95 pointer-events-auto",
             fabOpen
               ? "!bg-primary text-primary-foreground !border-primary shadow-xl rotate-90"
-              : "text-foreground border-border/60 hover:border-primary/50 hover:shadow-xl hover:scale-105"
+              : "pill-bar text-foreground border-border/50 hover:border-primary/50 hover:shadow-xl hover:scale-105"
           )}
           style={{ willChange: "transform" }}
           title={fabOpen ? "收起快捷菜单" : "快捷操作 (地图、面板、设置)"}
