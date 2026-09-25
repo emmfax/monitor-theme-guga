@@ -13,9 +13,9 @@ import {
   Sparkles,
   Square,
   Droplets,
-  LayoutGrid,
-  List,
-  Grid2X2,
+  Shield,
+  Save,
+  RefreshCw,
 } from "lucide-react"
 import type { Palette } from "@/lib/config"
 import { cn } from "@/lib/utils"
@@ -39,20 +39,23 @@ export interface SettingsModalProps {
   cardBlur: number
   onCardBlurChange: (val: number) => void
   bgUrl: string
+  defaultBgUrl?: string
   onBgUrlChange: (url: string) => void
   bgBlur: number
   onBgBlurChange: (val: number) => void
   bgMask: number
   onBgMaskChange: (val: number) => void
-  viewMode: ViewMode
-  onViewModeChange: (mode: ViewMode) => void
-  colCount: number
-  onColCountChange: (cols: number) => void
+  viewMode?: ViewMode
+  onViewModeChange?: (mode: ViewMode) => void
+  colCount?: number
+  onColCountChange?: (cols: number) => void
   summaryCollapsed: boolean
   onSummaryCollapsedChange: (collapsed: boolean) => void
   showSparkline: boolean
   onShowSparklineChange: (show: boolean) => void
   onResetAll: () => void
+  isAuthed?: boolean
+  onSaveSiteDefaults?: () => Promise<void>
 }
 
 const PRESET_WALLPAPERS = [
@@ -103,29 +106,30 @@ export function SettingsModal({
   cardBlur = 40,
   onCardBlurChange,
   bgUrl,
+  defaultBgUrl,
   onBgUrlChange,
   bgBlur = 20,
   onBgBlurChange,
   bgMask = 35,
   onBgMaskChange,
-  viewMode,
-  onViewModeChange,
-  colCount,
-  onColCountChange,
   summaryCollapsed,
   onSummaryCollapsedChange,
   showSparkline,
   onShowSparklineChange,
   onResetAll,
+  isAuthed = false,
+  onSaveSiteDefaults,
 }: SettingsModalProps) {
-  const [prevBgUrl, setPrevBgUrl] = useState(bgUrl)
   const [inputUrl, setInputUrl] = useState(bgUrl)
-  const [resetFeedback, setResetFeedback] = useState(false)
-
+  const [prevBgUrl, setPrevBgUrl] = useState(bgUrl)
   if (bgUrl !== prevBgUrl) {
     setPrevBgUrl(bgUrl)
     setInputUrl(bgUrl)
   }
+  const [resetFeedback, setResetFeedback] = useState(false)
+  const [isSavingSite, setIsSavingSite] = useState(false)
+  const [siteSaveSuccess, setSiteSaveSuccess] = useState(false)
+  const [siteSaveError, setSiteSaveError] = useState<string | null>(null)
 
   if (!isOpen) return null
 
@@ -145,7 +149,7 @@ export function SettingsModal({
 
   const handleReset = () => {
     onResetAll()
-    setInputUrl("")
+    setInputUrl(defaultBgUrl ?? "")
     setResetFeedback(true)
     setTimeout(() => setResetFeedback(false), 2000)
   }
@@ -585,62 +589,10 @@ export function SettingsModal({
             </div>
           </Section>
 
-          {/* 5. 排版布局与功能 */}
-          <Section icon={LayoutGrid} title="排版布局与功能">
-            {/* View Mode */}
-            <div className="space-y-2">
-              <span className="text-xs font-medium text-foreground">视图排版模式</span>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { mode: "list" as const, label: "列表模式", icon: List },
-                  { mode: "compact" as const, label: "紧凑模式", icon: Grid2X2 },
-                  { mode: "grid" as const, label: "大卡片", icon: LayoutGrid },
-                ].map(({ mode, label, icon: ModeIcon }) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => onViewModeChange(mode)}
-                    className={cn(
-                      "flex items-center justify-center gap-1.5 rounded-xl border p-2.5 text-xs font-semibold transition-all cursor-pointer active:scale-95",
-                      viewMode === mode
-                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                        : "bg-card hover:bg-muted border-border/40 text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <ModeIcon className="size-3.5" />
-                    <span>{label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Column Count (1 to 5) */}
-            <div className="space-y-2 pt-2 border-t border-border/30">
-              <div className="flex items-center justify-between text-xs font-medium text-foreground">
-                <span>每行卡片数量 (网格/紧凑)</span>
-                <span className="tnum font-semibold text-primary">{colCount} 列</span>
-              </div>
-              <div className="grid grid-cols-5 gap-1.5">
-                {[1, 2, 3, 4, 5].map((cols) => (
-                  <button
-                    key={cols}
-                    type="button"
-                    onClick={() => onColCountChange(cols)}
-                    className={cn(
-                      "rounded-lg py-1.5 text-xs font-semibold border transition-all cursor-pointer active:scale-95 text-center",
-                      colCount === cols
-                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                        : "bg-card hover:bg-muted border-border/40 text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {cols}列
-                  </button>
-                ))}
-              </div>
-            </div>
-
+          {/* 5. 看板与图表功能 */}
+          <Section icon={Layers} title="看板与图表功能">
             {/* Feature Toggles: Summary bar & Sparkline */}
-            <div className="space-y-2 pt-2 border-t border-border/30">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <span className="text-xs font-medium text-foreground block">顶部统计看板</span>
@@ -660,7 +612,7 @@ export function SettingsModal({
                 </button>
               </div>
 
-              <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center justify-between pt-1 border-t border-border/20">
                 <div className="space-y-0.5">
                   <span className="text-xs font-medium text-foreground block">实时网速折线图</span>
                   <span className="text-[10px] text-muted-foreground">在节点卡片上展示最近几分钟的波动折线</span>
@@ -680,6 +632,58 @@ export function SettingsModal({
               </div>
             </div>
           </Section>
+
+          {/* 6. 管理员全站设置保存 (仅管理员登录后可见) */}
+          {isAuthed && onSaveSiteDefaults && (
+            <div className="rounded-2xl p-4 border border-primary/30 bg-primary/5 space-y-2.5">
+              <div className="flex items-center gap-2 text-foreground font-semibold text-xs">
+                <Shield className="size-4 text-primary" />
+                <span>管理员操作 · 保存为全站默认</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed font-normal">
+                将当前界面的外观模式、强调色、纯黑白字色、卡片风格与壁纸配置直接写入服务端，作为所有未单独自定义过访客的默认视觉体验。
+              </p>
+              {siteSaveError && (
+                <p className="text-[11px] font-medium text-destructive">{siteSaveError}</p>
+              )}
+              <button
+                type="button"
+                disabled={isSavingSite}
+                onClick={async () => {
+                  setIsSavingSite(true)
+                  setSiteSaveError(null)
+                  try {
+                    await onSaveSiteDefaults()
+                    setSiteSaveSuccess(true)
+                    setTimeout(() => setSiteSaveSuccess(false), 2500)
+                  } catch (err: unknown) {
+                    const message = err instanceof Error ? err.message : "保存失败，请检查网络或服务端权限"
+                    setSiteSaveError(message)
+                  } finally {
+                    setIsSavingSite(false)
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 active:scale-98 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {isSavingSite ? (
+                  <>
+                    <RefreshCw className="size-3.5 animate-spin" />
+                    <span>正在同步保存至服务端…</span>
+                  </>
+                ) : siteSaveSuccess ? (
+                  <>
+                    <Check className="size-4 text-primary-foreground" />
+                    <span>全站默认设置已保存成功！</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="size-3.5" />
+                    <span>保存当前效果为全站默认</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Footer Actions */}

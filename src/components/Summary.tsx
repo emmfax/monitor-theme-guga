@@ -166,8 +166,6 @@ export function Summary({
   nodes,
   group,
   collapsed = false,
-  onToggleCollapse,
-  siteName,
 }: {
   nodes: Node[]
   group: string | null
@@ -191,52 +189,7 @@ export function Summary({
   const monthlyCostText = calcMonthlyCost(nodes)
 
   if (collapsed) {
-    return (
-      <div
-        onClick={onToggleCollapse}
-        className={cn(
-          "glass-card flex items-center justify-between rounded-2xl sm:rounded-full border border-border/50 px-3.5 sm:px-4.5 py-2 text-xs shadow-xs select-none transition-all duration-200",
-          onToggleCollapse && "cursor-pointer hover:border-primary/40 active:scale-[0.99] group"
-        )}
-        title={onToggleCollapse ? "点击展开全网监控概览看板" : undefined}
-      >
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none py-0.5 min-w-0">
-          <span className="flex items-center gap-1.5 font-medium text-foreground shrink-0">
-            <span className="size-2 rounded-full bg-ok animate-pulse-dot" />
-            {online.length}/{nodes.length} 在线
-          </span>
-          {monthlyCostText && (
-            <>
-              <span className="text-border/60 shrink-0">/</span>
-              <span className="text-muted-foreground shrink-0">
-                月成本: <span className="tnum font-medium text-foreground">{monthlyCostText}</span>
-              </span>
-            </>
-          )}
-          <span className={cn("text-border/60 shrink-0", monthlyCostText ? "hidden sm:inline" : "")}>/</span>
-          <span className={cn("text-muted-foreground truncate", monthlyCostText ? "hidden sm:inline" : "")}>
-            今日: <span className="tnum font-medium text-foreground">↓{bytes(sum((n) => n.day_rx))} · ↑{bytes(sum((n) => n.day_tx))}</span>
-          </span>
-          <span className="text-border/60 hidden md:inline shrink-0">/</span>
-          <span className="text-muted-foreground hidden md:inline shrink-0">
-            实时: <span className="tnum font-medium text-foreground">↓{rate(now.rx)} · ↑{rate(now.tx)}</span>
-          </span>
-          <span className="text-border/60 hidden md:inline shrink-0">/</span>
-          <span className="text-muted-foreground hidden md:inline shrink-0">
-            累计: <span className="tnum font-medium text-foreground">{bytes(sum((n) => n.total_rx + n.total_tx))}</span>
-          </span>
-        </div>
-
-        {/* Right: Site Name */}
-        {siteName && (
-          <div className="flex items-center pl-2.5 sm:pl-3 border-l border-border/40 shrink-0 ml-2">
-            <span className="text-xs font-semibold text-foreground tracking-tight hidden sm:inline">
-              {siteName}
-            </span>
-          </div>
-        )}
-      </div>
-    )
+    return null
   }
 
   // Calculations for dynamic peak modes (computed only when expanded and active)

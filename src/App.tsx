@@ -24,7 +24,7 @@ import { WorldMap } from "@/components/WorldMap"
 import { Skeleton } from "@/components/Skeleton"
 import { SettingsModal, type ThemeMode, type CardStyle, type ViewMode } from "@/components/SettingsModal"
 import { api, groupsOf, useNodes, type Node } from "@/lib/api"
-import { loadConfig, type Palette, type ThemeConfig } from "@/lib/config"
+import { loadConfig, saveConfig, type BgPreset, type Palette, type ThemeConfig } from "@/lib/config"
 import { isNodeExpiring } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -402,6 +402,51 @@ export default function App() {
     updateShowSparkline,
   ])
 
+  const handleSaveSiteDefaults = useCallback(async () => {
+    let bgPreset: BgPreset = "none"
+    const trimmedBg = bgUrl.trim()
+    if (trimmedBg === "https://api.kdcc.cn/img/bing.php") {
+      bgPreset = "bing_daily"
+    } else if (trimmedBg === "https://bing.ee123.net/img/rand") {
+      bgPreset = "bing_rand"
+    } else if (trimmedBg.length > 0) {
+      bgPreset = "custom"
+    }
+
+    const payload = {
+      palette,
+      theme_mode: themeMode,
+      monochrome,
+      card_style: cardStyle,
+      card_blur: cardBlur,
+      bg_blur: bgBlur,
+      bg_mask: bgMask,
+      bg_preset: bgPreset,
+      bg_url: trimmedBg,
+      columns: colCount,
+      default_view: viewMode,
+      show_summary: !summaryCollapsed,
+      show_sparkline: showSparkline,
+    }
+
+    await saveConfig(payload)
+    const refreshed = await loadConfig()
+    setConfig(refreshed)
+  }, [
+    palette,
+    themeMode,
+    monochrome,
+    cardStyle,
+    cardBlur,
+    bgBlur,
+    bgMask,
+    bgUrl,
+    colCount,
+    viewMode,
+    summaryCollapsed,
+    showSparkline,
+  ])
+
   const loadMe = useCallback(() => {
     return api<Me>("/me")
       .then((next) => {
@@ -676,6 +721,7 @@ export default function App() {
         cardBlur={cardBlur}
         onCardBlurChange={updateCardBlur}
         bgUrl={bgUrl}
+        defaultBgUrl={config?.bg_url ?? ""}
         onBgUrlChange={updateBgUrl}
         bgBlur={bgBlur}
         onBgBlurChange={updateBgBlur}
@@ -690,6 +736,8 @@ export default function App() {
         showSparkline={showSparkline}
         onShowSparklineChange={updateShowSparkline}
         onResetAll={handleResetPreferences}
+        isAuthed={me?.authed}
+        onSaveSiteDefaults={handleSaveSiteDefaults}
       />
     </div>
   )
