@@ -143,7 +143,7 @@ function PricePill({ node }: { node: Node }) {
   const isFree = node.billing_cycle === "free" || (node.price !== undefined && node.price === 0)
   if (isFree) {
     return (
-      <span className="tnum rounded-full bg-ok/10 text-ok px-2.5 py-0.5 text-[10px] font-medium border border-ok/25 select-none">
+      <span className="tnum rounded-full bg-muted/40 text-muted-foreground px-2.5 py-0.5 text-[10px] font-medium border border-border/30 select-none">
         免费
       </span>
     )

@@ -101,6 +101,10 @@ function useCustomBackground() {
     const saved = localStorage.getItem("theme_bg_mask")
     return saved !== null ? Number(saved) : 35
   })
+  const [bgBlur, setBgBlur] = useState(() => {
+    const saved = localStorage.getItem("theme_bg_blur")
+    return saved !== null ? Number(saved) : 20
+  })
 
   const updateBgUrl = useCallback((url: string, persist = true) => {
     setBgUrl(url)
@@ -120,7 +124,14 @@ function useCustomBackground() {
     }
   }, [])
 
-  return { bgUrl, bgMask, updateBgUrl, updateBgMask }
+  const updateBgBlur = useCallback((val: number, persist = true) => {
+    setBgBlur(val)
+    if (persist) {
+      localStorage.setItem("theme_bg_blur", String(val))
+    }
+  }, [])
+
+  return { bgUrl, bgMask, bgBlur, updateBgUrl, updateBgMask, updateBgBlur }
 }
 
 function useCardStyle() {
@@ -183,10 +194,27 @@ function usePalette(defaultPalette: Palette = "mono") {
 
 export default function App() {
   const { mode: themeMode, setThemeMode } = useTheme()
-  const { bgUrl, bgMask, updateBgUrl, updateBgMask } = useCustomBackground()
+  const { bgUrl, bgMask, bgBlur, updateBgUrl, updateBgMask, updateBgBlur } = useCustomBackground()
   const { cardStyle, updateCardStyle } = useCardStyle()
   const [config, setConfig] = useState<ThemeConfig | null>(null)
   const [palette, setPalette] = usePalette(config?.palette ?? "mono")
+
+  const [monochrome, setMonochrome] = useState<boolean>(() => {
+    return localStorage.getItem("theme_monochrome") === "true"
+  })
+  const updateMonochrome = useCallback((val: boolean, persist = true) => {
+    setMonochrome(val)
+    if (persist) localStorage.setItem("theme_monochrome", String(val))
+  }, [])
+
+  const [cardBlur, setCardBlur] = useState<number>(() => {
+    const saved = localStorage.getItem("theme_card_blur_amount")
+    return saved !== null ? Number(saved) : 40
+  })
+  const updateCardBlur = useCallback((val: number, persist = true) => {
+    setCardBlur(val)
+    if (persist) localStorage.setItem("theme_card_blur_amount", String(val))
+  }, [])
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     return (localStorage.getItem("theme_view_mode") as ViewMode) || "list"
@@ -239,26 +267,25 @@ export default function App() {
     const root = document.documentElement
     root.setAttribute("data-card-style", cardStyle)
     root.setAttribute("data-card-blur", String(cardStyle !== "solid"))
+    root.setAttribute("data-monochrome", String(monochrome))
 
     if (cardStyle === "solid") {
       root.style.setProperty("--glass-blur", "0px")
       root.style.setProperty("--glass-bg-opacity", "1")
       root.style.setProperty("--pill-bg-opacity", "1")
     } else if (cardStyle === "transparent") {
-      const px = Math.round(14 + (bgMask / 100) * 20)
-      const op = (0.50 + (bgMask / 100) * 0.25).toFixed(2)
+      const px = Math.round((cardBlur / 100) * 32)
       root.style.setProperty("--glass-blur", `${px}px`)
-      root.style.setProperty("--glass-bg-opacity", op)
-      root.style.setProperty("--pill-bg-opacity", (0.45 + (bgMask / 100) * 0.25).toFixed(2))
+      root.style.setProperty("--glass-bg-opacity", "0.60")
+      root.style.setProperty("--pill-bg-opacity", "0.55")
     } else {
-      // "blur" mode: frosted glass with 0-100 stepless control
-      const px = Math.round(14 + (bgMask / 100) * 24)
-      const op = bgMask === 0 ? "0.95" : (0.68 + (bgMask / 100) * 0.25).toFixed(2)
+      // "blur" mode: frosted glass with cardBlur control
+      const px = Math.round((cardBlur / 100) * 36)
       root.style.setProperty("--glass-blur", `${px}px`)
-      root.style.setProperty("--glass-bg-opacity", op)
-      root.style.setProperty("--pill-bg-opacity", (0.55 + (bgMask / 100) * 0.30).toFixed(2))
+      root.style.setProperty("--glass-bg-opacity", "0.85")
+      root.style.setProperty("--pill-bg-opacity", "0.72")
     }
-  }, [cardStyle, bgMask])
+  }, [cardStyle, cardBlur, monochrome])
 
   useEffect(() => {
     loadConfig().then((cfg) => {
@@ -268,6 +295,9 @@ export default function App() {
       }
       if (localStorage.getItem("theme_mode") === null && cfg.theme_mode) {
         setThemeMode(cfg.theme_mode, false)
+      }
+      if (localStorage.getItem("theme_monochrome") === null && cfg.monochrome !== undefined) {
+        updateMonochrome(cfg.monochrome, false)
       }
       if (localStorage.getItem("theme_card_style") === null && cfg.card_style) {
         updateCardStyle(cfg.card_style, false)
@@ -294,6 +324,7 @@ export default function App() {
   }, [
     setPalette,
     setThemeMode,
+    updateMonochrome,
     updateCardStyle,
     updateBgUrl,
     updateBgMask,
@@ -308,9 +339,12 @@ export default function App() {
     localStorage.removeItem("theme")
     localStorage.removeItem("theme_custom_bg")
     localStorage.removeItem("theme_bg_mask")
+    localStorage.removeItem("theme_bg_blur")
     localStorage.removeItem("theme_card_style")
     localStorage.removeItem("theme_card_blur")
+    localStorage.removeItem("theme_card_blur_amount")
     localStorage.removeItem("theme_palette")
+    localStorage.removeItem("theme_monochrome")
     localStorage.removeItem("theme_view_mode")
     localStorage.removeItem("theme_columns")
     localStorage.removeItem("theme_summary_collapsed")
@@ -318,6 +352,7 @@ export default function App() {
 
     const defPalette = config?.palette ?? "mono"
     const defMode = config?.theme_mode ?? "system"
+    const defMono = config?.monochrome ?? false
     const defStyle = config?.card_style ?? "solid"
     const defBgUrl = config?.bg_url ?? ""
     const defMask = config?.bg_mask ?? 35
@@ -328,9 +363,12 @@ export default function App() {
 
     setPalette(defPalette, false)
     setThemeMode(defMode, false)
+    updateMonochrome(defMono, false)
     updateCardStyle(defStyle, false)
+    updateCardBlur(40, false)
     updateBgUrl(defBgUrl, false)
     updateBgMask(defMask, false)
+    updateBgBlur(20, false)
     updateViewMode(defView, false)
     updateColCount(defCols, false)
     updateSummaryCollapsed(defSummary, false)
@@ -339,9 +377,12 @@ export default function App() {
     config,
     setPalette,
     setThemeMode,
+    updateMonochrome,
     updateCardStyle,
+    updateCardBlur,
     updateBgUrl,
     updateBgMask,
+    updateBgBlur,
     updateViewMode,
     updateColCount,
     updateSummaryCollapsed,
@@ -431,7 +472,7 @@ export default function App() {
             referrerPolicy="no-referrer"
             className="absolute -inset-6 size-[calc(100%+3rem)] max-w-none object-cover object-center"
             style={{
-              filter: bgMask === 0 ? "none" : `blur(${((bgMask / 100) * 16).toFixed(1)}px) saturate(1.15)`,
+              filter: bgBlur === 0 ? "none" : `blur(${((bgBlur / 100) * 28).toFixed(1)}px) saturate(1.15)`,
               transform: "scale(1.05)",
             }}
           />
@@ -612,13 +653,19 @@ export default function App() {
         onClose={() => setSettingsOpen(false)}
         themeMode={themeMode}
         onThemeModeChange={setThemeMode}
+        monochrome={monochrome}
+        onMonochromeChange={updateMonochrome}
         palette={palette}
         onPaletteChange={setPalette}
         palettes={PALETTES}
         cardStyle={cardStyle}
         onCardStyleChange={updateCardStyle}
+        cardBlur={cardBlur}
+        onCardBlurChange={updateCardBlur}
         bgUrl={bgUrl}
         onBgUrlChange={updateBgUrl}
+        bgBlur={bgBlur}
+        onBgBlurChange={updateBgBlur}
         bgMask={bgMask}
         onBgMaskChange={updateBgMask}
         viewMode={viewMode}

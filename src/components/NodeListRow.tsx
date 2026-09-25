@@ -38,7 +38,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
       className="glass-card group relative flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 lg:gap-3 rounded-2xl sm:rounded-3xl border border-border/50 px-3.5 py-2.5 sm:px-5 sm:py-3.5 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm cursor-pointer select-none"
     >
       {/* 1. Name & OS (On mobile: includes status & price on the right) */}
-      <div className="flex items-center justify-between lg:justify-start gap-3 lg:min-w-[200px]">
+      <div className="flex items-center justify-between lg:justify-start gap-3 lg:w-[220px] lg:shrink-0">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <CountryFlag country={node.country} />
           <div className="min-w-0">
@@ -89,7 +89,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
           {(isFree || priceStr || expiryShort) && (
             <div className="flex items-center gap-1 text-[9px] text-muted-foreground tnum font-normal">
               {isFree ? (
-                <span className="font-semibold text-ok">免费</span>
+                <span className="font-normal text-muted-foreground/80">续费: 免费</span>
               ) : priceStr ? (
                 <span className="font-medium text-foreground/80">{priceStr}</span>
               ) : null}
@@ -109,7 +109,7 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
       </div>
 
       {/* 2. Resources: CPU, RAM, Disk, Traffic */}
-      <div className="grid grid-cols-4 gap-2 sm:gap-2.5 lg:gap-3 w-full lg:w-auto lg:min-w-[320px] sm:lg:min-w-[360px]">
+      <div className="grid grid-cols-4 gap-2 sm:gap-2.5 lg:gap-3 w-full lg:w-[320px] lg:shrink-0">
         {/* CPU */}
         <div className="flex flex-col gap-0.5 sm:gap-1">
           <div className="flex items-center justify-between text-[9px] sm:text-[10px] font-medium text-muted-foreground">
@@ -181,38 +181,38 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
         </div>
       </div>
 
-      {/* 3. Live Speed (Desktop) */}
-      <div className="hidden lg:flex items-center gap-2 min-w-[150px] text-xs tnum">
+      {/* 3. Live Speed (Desktop) - Fixed widths for vertical column alignment */}
+      <div className="hidden lg:flex items-center gap-2 w-[190px] shrink-0 text-xs tnum">
         <Activity className="size-3.5 text-ok shrink-0" />
         <div className="flex items-center gap-1.5 font-semibold">
-          <span className="text-ok flex items-center">
-            <ArrowDown className="size-2.5" />
-            {m ? rate(m.net_rx) : "0 B/s"}
+          <span className="text-ok flex items-center gap-0.5 w-[76px] shrink-0">
+            <ArrowDown className="size-2.5 shrink-0" />
+            <span className="truncate">{m ? rate(m.net_rx) : "0 B/s"}</span>
           </span>
-          <span className="text-sky-400 flex items-center">
-            <ArrowUp className="size-2.5" />
-            {m ? rate(m.net_tx) : "0 B/s"}
+          <span className="text-sky-400 flex items-center gap-0.5 w-[76px] shrink-0">
+            <ArrowUp className="size-2.5 shrink-0" />
+            <span className="truncate">{m ? rate(m.net_tx) : "0 B/s"}</span>
           </span>
         </div>
       </div>
 
-      {/* 3.5 Average Latency (Desktop) */}
-      <div className="hidden lg:flex items-center gap-1.5 min-w-[80px] text-xs select-none">
+      {/* 3.5 Average Latency (Desktop) - Fixed width for vertical column alignment */}
+      <div className="hidden lg:flex items-center gap-1.5 w-[90px] shrink-0 text-xs select-none">
         <span className="text-[11px] text-muted-foreground font-medium shrink-0">平延:</span>
         {node.online && avgMs !== null ? (
           <span className={cn(
-            "tnum text-[11px] font-semibold",
+            "tnum text-[11px] font-semibold w-[48px] truncate",
             avgMs <= 0 ? "text-destructive" : avgMs <= 50 ? "text-ok" : avgMs <= 120 ? "text-sky-500" : "text-amber-500"
           )}>
             {avgMs <= 0 ? "超时" : `${avgMs}ms`}
           </span>
         ) : (
-          <span className="text-[11px] text-muted-foreground">—</span>
+          <span className="text-[11px] text-muted-foreground w-[48px]">—</span>
         )}
       </div>
 
       {/* 4. Traffic Usage & Expiry (Desktop) */}
-      <div className="hidden lg:flex items-center justify-end gap-3.5 sm:gap-4 min-w-[200px] text-xs">
+      <div className="hidden lg:flex items-center justify-end gap-3.5 sm:gap-4 w-[230px] shrink-0 text-xs">
         <div className="text-[11px] text-muted-foreground tnum font-normal flex flex-col items-end gap-0.5">
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">月用量:</span>
@@ -237,8 +237,8 @@ export function NodeListRow({ node, onOpen }: { node: Node; onOpen: () => void }
             <span className="text-[10px] font-medium text-muted-foreground">{days} 天后到期</span>
           )}
           {isFree ? (
-            <span className="text-[10px] font-medium text-ok bg-ok/10 px-2 py-0.5 rounded-full border border-ok/20">
-              免费
+            <span className="text-[10px] font-medium text-muted-foreground/80 tnum">
+              续费: 免费
             </span>
           ) : node.price && node.price > 0 ? (
             <span className="text-[10px] font-medium text-muted-foreground/80 tnum">

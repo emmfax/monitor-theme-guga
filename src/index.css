@@ -321,6 +321,43 @@ html.dark[data-card-style="transparent"] .pill-bar {
   box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.18), 0 6px 20px rgba(0, 0, 0, 0.35) !important;
 }
 
+/* 4. Pure Monochrome Typography & Metrics Mode (纯黑白极简字色模式) */
+html[data-monochrome="true"] {
+  --color-ok: var(--foreground) !important;
+  --ok: var(--foreground) !important;
+}
+
+html[data-monochrome="true"] .text-ok,
+html[data-monochrome="true"] .text-sky-400,
+html[data-monochrome="true"] .text-sky-500,
+html[data-monochrome="true"] .text-amber-500,
+html[data-monochrome="true"] .text-warn {
+  color: var(--foreground) !important;
+  opacity: 0.95;
+}
+
+html[data-monochrome="true"] .bg-ok,
+html[data-monochrome="true"] .bg-warn {
+  background-color: var(--foreground) !important;
+}
+
+html[data-monochrome="true"] .bg-ok\/10,
+html[data-monochrome="true"] .bg-ok\/12,
+html[data-monochrome="true"] .bg-warn\/15,
+html[data-monochrome="true"] .bg-sky-500\/8,
+html[data-monochrome="true"] .bg-sky-500\/10,
+html[data-monochrome="true"] .bg-amber-500\/8,
+html[data-monochrome="true"] .bg-amber-500\/10 {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+}
+
+html[data-monochrome="true"] .border-ok\/20,
+html[data-monochrome="true"] .border-ok\/25,
+html[data-monochrome="true"] .border-warn\/30 {
+  border-color: var(--border) !important;
+}
+
 /* Custom Sleek Scrollbar (Minimal iOS-like rounded pill) */
 ::-webkit-scrollbar {
   width: 6px;

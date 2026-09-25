@@ -9,6 +9,7 @@ export type BgPreset = "none" | "bing_daily" | "bing_rand" | "custom"
 export type ThemeConfig = {
   palette: Palette
   theme_mode: ThemeMode
+  monochrome?: boolean
   card_style: CardStyle
   bg_mask: number
   bg_preset: BgPreset

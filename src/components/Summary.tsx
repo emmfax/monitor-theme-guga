@@ -215,8 +215,8 @@ export function Summary({
               </span>
             </>
           )}
-          <span className="text-border/60 shrink-0">/</span>
-          <span className="text-muted-foreground truncate">
+          <span className={cn("text-border/60 shrink-0", monthlyCostText ? "hidden sm:inline" : "")}>/</span>
+          <span className={cn("text-muted-foreground truncate", monthlyCostText ? "hidden sm:inline" : "")}>
             今日: <span className="tnum font-medium text-foreground">↓{bytes(sum((n) => n.day_rx))} · ↑{bytes(sum((n) => n.day_tx))}</span>
           </span>
           <span className="text-border/60 hidden md:inline shrink-0">/</span>
@@ -232,14 +232,14 @@ export function Summary({
         {/* Right: Site Name & Prominent Expand Indicator */}
         <div className="flex items-center gap-1.5 sm:gap-2 pl-2.5 sm:pl-3 border-l border-border/40 shrink-0 ml-2">
           {siteName && (
-            <span className="text-xs font-semibold text-foreground tracking-tight">
+            <span className="text-xs font-semibold text-foreground tracking-tight hidden sm:inline">
               {siteName}
             </span>
           )}
           {onToggleCollapse && (
-            <div className="flex items-center gap-0.5 rounded-full bg-muted/60 group-hover:bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-muted-foreground group-hover:text-primary transition-colors">
+            <div className="flex items-center gap-0.5 rounded-full bg-primary/10 group-hover:bg-primary/20 px-2 py-0.5 text-[11px] font-semibold text-primary transition-colors shrink-0">
               <span>展开</span>
-              <ChevronDown className="size-3 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-y-0.5" />
+              <ChevronDown className="size-3 text-primary transition-transform group-hover:translate-y-0.5" />
             </div>
           )}
         </div>

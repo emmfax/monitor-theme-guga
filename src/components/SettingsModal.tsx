@@ -29,13 +29,19 @@ export interface SettingsModalProps {
   onClose: () => void
   themeMode: ThemeMode
   onThemeModeChange: (mode: ThemeMode) => void
+  monochrome: boolean
+  onMonochromeChange: (val: boolean) => void
   palette: Palette
   onPaletteChange: (palette: Palette) => void
   palettes: { key: Palette; name: string; color: string }[]
   cardStyle: CardStyle
   onCardStyleChange: (style: CardStyle) => void
+  cardBlur: number
+  onCardBlurChange: (val: number) => void
   bgUrl: string
   onBgUrlChange: (url: string) => void
+  bgBlur: number
+  onBgBlurChange: (val: number) => void
   bgMask: number
   onBgMaskChange: (val: number) => void
   viewMode: ViewMode
@@ -87,14 +93,20 @@ export function SettingsModal({
   onClose,
   themeMode,
   onThemeModeChange,
+  monochrome = false,
+  onMonochromeChange,
   palette,
   onPaletteChange,
   palettes,
   cardStyle,
   onCardStyleChange,
+  cardBlur = 40,
+  onCardBlurChange,
   bgUrl,
   onBgUrlChange,
-  bgMask,
+  bgBlur = 20,
+  onBgBlurChange,
+  bgMask = 35,
   onBgMaskChange,
   viewMode,
   onViewModeChange,
@@ -224,6 +236,33 @@ export function SettingsModal({
             <p className="text-[11px] text-muted-foreground font-normal leading-relaxed">
               选择「跟随系统」时，将随您的操作系统或浏览器深浅主题自动无缝切换。
             </p>
+
+            {/* 纯黑白极简字色开关 */}
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/50">
+              <div className="space-y-0.5 pr-2">
+                <div className="text-xs font-semibold text-foreground">纯黑白极简字色</div>
+                <div className="text-[11px] text-muted-foreground leading-snug">
+                  去除速率与指标彩色，转为纯黑白灰度，极致精简不臃肿
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={monochrome}
+                onClick={() => onMonochromeChange(!monochrome)}
+                className={cn(
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                  monochrome ? "bg-primary" : "bg-muted"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                    monochrome ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
           </Section>
 
           {/* 2. 主题配色 */}
@@ -328,12 +367,12 @@ export function SettingsModal({
               </button>
             </div>
 
-            {/* Stepless Blur & Mask Concentration Controls (Active in blur or transparent mode) */}
+            {/* Stepless Card Blur Controls (Active in blur or transparent mode) */}
             {cardStyle !== "solid" && (
               <div className="space-y-3 pt-2.5 border-t border-border/30">
                 <div className="flex items-center justify-between text-xs font-medium text-foreground">
-                  <span>背景遮罩浓度 (0-100%)</span>
-                  <span className="tnum font-semibold text-primary">{bgMask}%</span>
+                  <span>卡片毛玻璃模糊度 (0-100%)</span>
+                  <span className="tnum font-semibold text-primary">{cardBlur}%</span>
                 </div>
 
                 {/* Stepless Range Slider & Number Input */}
@@ -343,8 +382,8 @@ export function SettingsModal({
                     min={0}
                     max={100}
                     step={1}
-                    value={bgMask}
-                    onChange={(e) => onBgMaskChange(Number(e.target.value))}
+                    value={cardBlur}
+                    onChange={(e) => onCardBlurChange(Number(e.target.value))}
                     className="flex-1 h-2 rounded-full appearance-none bg-muted accent-primary cursor-pointer"
                   />
                   <div className="relative w-16 shrink-0">
@@ -352,10 +391,10 @@ export function SettingsModal({
                       type="number"
                       min={0}
                       max={100}
-                      value={bgMask}
+                      value={cardBlur}
                       onChange={(e) => {
                         const val = e.target.value === "" ? 0 : Number(e.target.value)
-                        onBgMaskChange(Math.max(0, Math.min(100, Math.round(val))))
+                        onCardBlurChange(Math.max(0, Math.min(100, Math.round(val))))
                       }}
                       className="w-full rounded-xl border border-border/60 bg-muted/40 px-2.5 py-1.5 text-xs font-semibold text-foreground text-center focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs pr-5"
                     />
@@ -368,19 +407,19 @@ export function SettingsModal({
                 {/* Quick Preset Buttons */}
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {[
-                    { val: 0, label: "0% 纯固色 (无模糊)" },
-                    { val: 20, label: "20% 通透" },
-                    { val: 35, label: "35% 标准 (推荐)" },
-                    { val: 50, label: "50% 柔和" },
-                    { val: 70, label: "70% 沉浸" },
+                    { val: 0, label: "0% 纯通透 (无模糊)" },
+                    { val: 20, label: "20% 轻度" },
+                    { val: 40, label: "40% 标准 (推荐)" },
+                    { val: 70, label: "70% 深度" },
+                    { val: 100, label: "100% 极深" },
                   ].map(({ val, label }) => (
                     <button
                       key={val}
                       type="button"
-                      onClick={() => onBgMaskChange(val)}
+                      onClick={() => onCardBlurChange(val)}
                       className={cn(
                         "rounded-lg px-2.5 py-1 text-[11px] font-medium border transition-colors cursor-pointer active:scale-95",
-                        bgMask === val
+                        cardBlur === val
                           ? "bg-primary text-primary-foreground border-primary font-semibold shadow-2xs"
                           : "bg-card hover:bg-muted border-border/40 text-muted-foreground hover:text-foreground"
                       )}
@@ -391,7 +430,7 @@ export function SettingsModal({
                 </div>
 
                 <p className="text-[10px] text-muted-foreground font-normal leading-relaxed">
-                  调节背景遮罩与模糊深度。数值越小越通透，数值越大越沉浸。
+                  独立调节信息卡片的毛玻璃模糊强度，不影响背景壁纸。
                 </p>
               </div>
             )}
@@ -399,7 +438,7 @@ export function SettingsModal({
 
           {/* 4. 背景壁纸 */}
           <Section icon={ImageIcon} title="背景壁纸">
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               <div className="flex gap-2">
                 <input
                   type="url"
@@ -462,6 +501,87 @@ export function SettingsModal({
                   </button>
                 ))}
               </div>
+
+              {/* Wallpaper Blur & Mask (Active when wallpaper is set) */}
+              {bgUrl && (
+                <div className="space-y-3 pt-2.5 border-t border-border/30">
+                  {/* 1. Wallpaper Blur Slider */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-medium text-foreground">
+                      <span>背景壁纸虚化度 (0-100%)</span>
+                      <span className="tnum font-semibold text-primary">{bgBlur}%</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={bgBlur}
+                        onChange={(e) => onBgBlurChange(Number(e.target.value))}
+                        className="flex-1 h-2 rounded-full appearance-none bg-muted accent-primary cursor-pointer"
+                      />
+                      <div className="relative w-16 shrink-0">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={bgBlur}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : Number(e.target.value)
+                            onBgBlurChange(Math.max(0, Math.min(100, Math.round(val))))
+                          }}
+                          className="w-full rounded-xl border border-border/60 bg-muted/40 px-2.5 py-1.5 text-xs font-semibold text-foreground text-center focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs pr-5"
+                        />
+                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium pointer-events-none">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground font-normal leading-relaxed">
+                      调节壁纸本身的虚化模糊程度，与卡片毛玻璃相互独立。
+                    </p>
+                  </div>
+
+                  {/* 2. Wallpaper Mask/Dimming Slider */}
+                  <div className="space-y-1.5 pt-2 border-t border-border/20">
+                    <div className="flex items-center justify-between text-xs font-medium text-foreground">
+                      <span>背景遮罩浓度 (0-100%)</span>
+                      <span className="tnum font-semibold text-primary">{bgMask}%</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={bgMask}
+                        onChange={(e) => onBgMaskChange(Number(e.target.value))}
+                        className="flex-1 h-2 rounded-full appearance-none bg-muted accent-primary cursor-pointer"
+                      />
+                      <div className="relative w-16 shrink-0">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={bgMask}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? 0 : Number(e.target.value)
+                            onBgMaskChange(Math.max(0, Math.min(100, Math.round(val))))
+                          }}
+                          className="w-full rounded-xl border border-border/60 bg-muted/40 px-2.5 py-1.5 text-xs font-semibold text-foreground text-center focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs pr-5"
+                        />
+                        <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium pointer-events-none">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground font-normal leading-relaxed">
+                      调节壁纸上方深浅色保护遮罩，数值越大越容易看清文字。
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </Section>
 

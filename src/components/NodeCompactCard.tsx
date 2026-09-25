@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp } from "lucide-react"
 import { CountryFlag } from "@/components/CountryFlag"
 import { type Node, useNodeLatency } from "@/lib/api"
-import { bytes, CYCLES, daysUntil, FOREVER, money, pair, percent, rate, uptime } from "@/lib/format"
+import { bytes, CYCLES, daysUntil, FOREVER, money, osName, pair, percent, rate, uptime } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => void }) {
@@ -37,13 +37,19 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}
       className="glass-card group relative flex flex-col justify-between rounded-3xl border border-border/50 p-4 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm cursor-pointer select-none"
     >
-      {/* 1. Header: Flag, Name, Status, Price & Expiry */}
+      {/* 1. Header: Flag, Name, OS/Arch, Status, Price & Expiry */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 pt-0.5">
+        <div className="flex items-center gap-2.5 min-w-0 pt-0.5">
           <CountryFlag country={node.country} />
-          <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-            {node.name}
-          </span>
+          <div className="min-w-0">
+            <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors block">
+              {node.name}
+            </span>
+            <div className="text-[10px] text-muted-foreground truncate font-normal">
+              {node.os ? osName(node.os) : "等待上报"}
+              {node.arch ? ` · ${node.arch}` : ""}
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col items-end gap-1 shrink-0 text-right">
@@ -60,7 +66,7 @@ export function NodeCompactCard({ node, onOpen }: { node: Node; onOpen: () => vo
           {(isFree || priceStr || expiryStr) && (
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground tnum font-normal select-none">
               {isFree ? (
-                <span className="font-semibold text-ok">免费</span>
+                <span className="font-normal text-muted-foreground/80">免费</span>
               ) : priceStr ? (
                 <span className="font-medium text-foreground/80">{priceStr}</span>
               ) : null}
